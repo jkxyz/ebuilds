@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - .github/gentoo-tools/Containerfile
+      - .github/gentoo-tools/gentoo.conf
       - .github/workflows/publish-gentoo-tools.yml
   workflow_dispatch:
 

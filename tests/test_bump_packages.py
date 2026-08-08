@@ -99,7 +99,7 @@ class BumpTests(BumpFixture):
         self.assertTrue(live.exists())
         self.assertTrue((self.package / result.ebuild).exists())
         self.assertFalse((self.package / ".pkgbump-pv").exists())
-        self.assertEqual([call[0][0] for call in calls], ["pkgbump", "pkgdev"])
+        self.assertEqual([call[0][0] for call in calls], ["pkgbump"])
         self.assertEqual(calls[0][0], ["pkgbump", "--no-diff", testing.name, "1.2.0"])
 
     def test_stable_source_is_preserved(self):

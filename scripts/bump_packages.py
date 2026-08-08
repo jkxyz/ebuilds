@@ -235,7 +235,6 @@ def bump(
         if testing_only(keywords(release.path, required=False)):
             release.path.unlink()
 
-    _run_tool(runner, ["pkgdev", "manifest"], directory)
     return BumpResult(
         atom=atom,
         previous_version=current.version,

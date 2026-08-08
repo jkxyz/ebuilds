@@ -24,5 +24,6 @@ COPY --from=portage /var/db/repos/gentoo/eclass /var/db/repos/gentoo/eclass
 COPY --from=portage /var/db/repos/gentoo/licenses /var/db/repos/gentoo/licenses
 COPY --from=portage /var/db/repos/gentoo/metadata /var/db/repos/gentoo/metadata
 COPY --from=portage /var/db/repos/gentoo/profiles /var/db/repos/gentoo/profiles
+COPY .github/gentoo-tools/gentoo.conf /etc/portage/repos.conf
 
 WORKDIR /var/db/repos/jkxyz-ebuilds
