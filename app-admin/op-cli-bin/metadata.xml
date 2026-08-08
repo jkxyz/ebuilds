@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<longdescription>
+		The official 1Password command-line client for Linux.
+	</longdescription>
+	<upstream>
+		<remote-id type="github">1Password/op</remote-id>
+		<changelog>https://app-updates.agilebits.com/product_history/CLI2</changelog>
+	</upstream>
+</pkgmetadata>
