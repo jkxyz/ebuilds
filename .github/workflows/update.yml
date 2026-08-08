@@ -81,7 +81,7 @@ jobs:
         env:
           ATOM: ${{ matrix.atom }}
           EBUILD: ${{ steps.release.outputs.ebuild }}
-        run: pkgcheck scan --exit GentooCI,-NonsolvableDeps --cache-dir /tmp/pkgcheck "${ATOM}/${EBUILD}"
+        run: pkgcheck scan --exit GentooCI --cache-dir /tmp/pkgcheck "${ATOM}/${EBUILD}"
 
       - name: Open update pull request
         if: steps.release.outputs.updated == 'true'
