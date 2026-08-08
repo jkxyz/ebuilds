@@ -36,8 +36,15 @@ src_prepare() {
 }
 
 src_install() {
+	local archive_arch
+	case ${ARCH} in
+		amd64) archive_arch=x64 ;;
+		arm64) archive_arch=arm64 ;;
+		*) die "Unsupported architecture: ${ARCH}" ;;
+	esac
+
 	mkdir -p "${D}/opt/1Password/"
-	cp -ar "${S}/${MY_PN}-${PV}/." "${D}/opt/1Password/" || die "Install failed!"
+	cp -ar "${S}/${MY_PN}-${PV}.${archive_arch}/." "${D}/opt/1Password/" || die "Install failed!"
 
 	# Fill in policy kit file with a list of (the first 10) human users of
 	# the system.
