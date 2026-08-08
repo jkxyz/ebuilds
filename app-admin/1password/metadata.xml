@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<use>
+		<flag name="cli">Install the 1Password command-line client via <pkg>app-admin/op-cli-bin</pkg></flag>
+	</use>
+</pkgmetadata>
