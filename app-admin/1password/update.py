@@ -145,6 +145,7 @@ def bump(
         cwd=package_directory,
         check=True,
     )
+    (package_directory / ".pkgbump-pv").unlink(missing_ok=True)
     if not destination.is_file():
         raise RuntimeError(f"pkgbump did not create {destination.name}")
 
