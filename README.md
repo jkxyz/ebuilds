@@ -47,37 +47,54 @@ Both flags are disabled by default.
 
 ## Maintenance
 
-The `latest-version.py` file in a package directory is the complete opt-in for release automation. It must print one stable Portage version, perform no workspace writes, and report failures on stderr. Packages without upstream releases, such as `acct-group/onepassword`, intentionally have no probe and are excluded from discovery.
+The `Update packages` workflow checks tracked packages daily and opens a pull request when it finds a new stable release. An executable `scripts/latest_versions/CATEGORY/PACKAGE.py` probe opts a package into these checks and prints its latest stable Portage version.
 
-The repository-wide bump program accepts only an atom and an explicit version; it does not contact upstream services or write GitHub workflow output files. The workflow composes the package matrix, package-local probe, and bump program at its shell boundary.
-
-The scheduled and manual `Update packages` workflow discovers every opted-in package, runs one independent matrix job per atom, and opens one signed, non-draft pull request per outdated package. It uses the pinned Gentoo tools image from `ghcr.io/jkxyz/ebuilds-gentoo-tools` and limits each pull request to its package directory.
-
-Build the same OCI-compatible tools image locally with rootless Podman:
+Run the probes directly to check upstream versions:
 
 ```bash
-podman build -f .github/gentoo-tools/Containerfile -t gentoo-tools .
+scripts/latest_versions/app-admin/1password-bin.py
+scripts/latest_versions/app-admin/op-cli-bin.py
 ```
 
-Run the package-local release probes without changing the working tree:
+For a manual bump, provide the atom and version from the repository root:
 
 ```bash
-app-admin/1password-bin/latest-version.py
-app-admin/op-cli-bin/latest-version.py
+scripts/bump_packages.py app-admin/1password-bin VERSION
+scripts/bump_packages.py app-admin/op-cli-bin VERSION
 ```
 
-Run a release bump and package QA from the repository root through the tools image:
+Regenerate the affected Manifest, run package QA, and inspect the complete diff before committing:
 
 ```bash
-podman run --rm -v "$PWD:/var/db/repos/jkxyz-ebuilds" -w /var/db/repos/jkxyz-ebuilds gentoo-tools scripts/bump_packages.py app-admin/1password-bin VERSION
-podman run --rm -v "$PWD:/var/db/repos/jkxyz-ebuilds" -w /var/db/repos/jkxyz-ebuilds gentoo-tools scripts/bump_packages.py app-admin/op-cli-bin VERSION
-podman run --rm -v "$PWD:/var/db/repos/jkxyz-ebuilds" -w /var/db/repos/jkxyz-ebuilds gentoo-tools pkgcheck scan --exit GentooCI,-NonsolvableDeps --cache-dir /tmp/pkgcheck app-admin/1password-bin
-podman run --rm -v "$PWD:/var/db/repos/jkxyz-ebuilds" -w /var/db/repos/jkxyz-ebuilds gentoo-tools pkgcheck scan --exit GentooCI,-NonsolvableDeps --cache-dir /tmp/pkgcheck .
+pkgdev manifest app-admin/1password-bin
+pkgcheck scan --exit GentooCI --cache-dir /tmp/pkgcheck app-admin/1password-bin
 ```
 
-For manual stabilization, test the testing ebuild first, then run `ekeyword ARCH... PACKAGE-VERSION.ebuild`, regenerate its Manifest with `pkgdev manifest`, run `pkgcheck`, inspect the complete diff, and commit normally. When stable users are expected to enable `cli`, stabilize `app-admin/op-cli-bin` for an architecture before stabilizing `app-admin/1password-bin` on that architecture. Remove an older stable ebuild manually only after the replacement has stable keyword coverage for every architecture carried by the old version.
+The tools used by CI are defined in `.github/gentoo-tools/Containerfile` if a matching local environment is needed.
 
-The initial full-overlay scan may use `GentooCI,-NonsolvableDeps`: stable `app-admin/1password-bin-8.12.28` can optionally depend on testing-only `app-admin/op-cli-bin`. The update workflow scans only the newly generated testing ebuild with the full `GentooCI` set.
+### Stabilizing a release
+
+Stabilize each architecture independently only after testing the testing-keyworded ebuild on that architecture.
+
+1. Install and test the target `~amd64` or `~arm64` ebuild. Test the relevant USE flag combinations as well.
+2. Before stabilizing `app-admin/1password-bin`, ensure `app-admin/op-cli-bin` already has a tested stable version for the same architecture. Stabilize the CLI first when necessary so the desktop package's `cli` dependency remains solvable.
+3. Replace the testing keyword with the stable keyword using `ekeyword`. For example, to stabilize amd64:
+
+```bash
+ekeyword amd64 app-admin/op-cli-bin/op-cli-bin-VERSION.ebuild
+ekeyword amd64 app-admin/1password-bin/1password-bin-VERSION.ebuild
+```
+
+Use `arm64` instead when stabilizing arm64, and omit the CLI command when a suitable CLI version is already stable for that architecture.
+
+4. Regenerate the Manifests and run QA on both packages:
+
+```bash
+pkgdev manifest app-admin/op-cli-bin app-admin/1password-bin
+pkgcheck scan --exit GentooCI --cache-dir /tmp/pkgcheck app-admin/op-cli-bin app-admin/1password-bin
+```
+
+5. Inspect the diff and commit the stabilization. Keep the older stable ebuild until the replacement is stable on every architecture keyworded by the old version; after removing it, regenerate the Manifest and run QA again.
 
 ## Provenance
 

@@ -96,12 +96,12 @@ def latest_stable_version(feed: str | None = None) -> str:
 def main(argv: list[str] | None = None) -> int:
     arguments = sys.argv[1:] if argv is None else argv
     if arguments:
-        print("latest-version.py accepts no arguments", file=sys.stderr)
+        print("op-cli-bin.py accepts no arguments", file=sys.stderr)
         return 2
     try:
         print(latest_stable_version())
     except Exception as error:  # noqa: BLE001 - a probe must turn all failures into exit status
-        print(f"latest-version.py: {error}", file=sys.stderr)
+        print(f"op-cli-bin.py: {error}", file=sys.stderr)
         return 1
     return 0
 

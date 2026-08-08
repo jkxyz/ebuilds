@@ -17,18 +17,18 @@ REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 
 
 def discover(root: Path = REPOSITORY_ROOT) -> list[dict[str, str]]:
-    """Discover packages opted into automation by a package-local probe."""
+    """Discover packages opted into automation by an atom-mirrored probe."""
 
     packages: list[dict[str, str]] = []
-    for probe in sorted(root.glob("*/*/latest-version.py")):
+    probes_root = root / "scripts" / "latest_versions"
+    for probe in sorted(probes_root.glob("*/*.py")):
         if not probe.is_file():
             continue
-        relative = probe.relative_to(root)
-        if len(relative.parts) != 3:
+        relative = probe.relative_to(probes_root)
+        if len(relative.parts) != 2:
             continue
-        category, package, filename = relative.parts
-        if filename != "latest-version.py":
-            continue
+        category, filename = relative.parts
+        package = Path(filename).stem
         package_path = root / category / package
         if not list(package_path.glob(f"{package}-*.ebuild")):
             continue

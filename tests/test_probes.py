@@ -24,7 +24,7 @@ class DesktopProbeTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.probe = load_probe(
-            "app-admin/1password-bin/latest-version.py", "desktop_latest_version"
+            "scripts/latest_versions/app-admin/1password-bin.py", "desktop_latest_version"
         )
 
     def test_normalizes_epoch_and_revision_and_selects_newest_stable(self):
@@ -68,7 +68,9 @@ Version: 8.12.31-beta.1-1
 class CliProbeTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.probe = load_probe("app-admin/op-cli-bin/latest-version.py", "cli_latest_version")
+        cls.probe = load_probe(
+            "scripts/latest_versions/app-admin/op-cli-bin.py", "cli_latest_version"
+        )
 
     def test_selects_newest_stable_article_and_ignores_prereleases(self):
         feed = """
