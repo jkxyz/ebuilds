@@ -47,7 +47,7 @@ Both flags are disabled by default.
 
 ## Maintenance
 
-The `Update packages` workflow checks tracked packages daily and opens a pull request when it finds a new stable release. An executable `scripts/latest_versions/CATEGORY/PACKAGE.py` probe opts a package into these checks and prints its latest stable Portage version.
+The `Update packages` workflow checks tracked packages daily and opens a pull request when it finds a new stable release. An executable `scripts/latest_versions/CATEGORY/PACKAGE.py` probe opts a package into these checks and prints its latest stable Portage version. Discovery and version comparison run directly on the Ubuntu runner; the Gentoo tools container starts only for packages that actually need an update.
 
 Run the probes directly to check upstream versions:
 

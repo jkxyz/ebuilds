@@ -20,35 +20,28 @@ jobs:
         shell: bash
     permissions:
       contents: read
-      packages: read
-    container:
-      image: ghcr.io/jkxyz/ebuilds-gentoo-tools:latest
-      credentials:
-        username: ${{ github.actor }}
-        password: ${{ github.token }}
     outputs:
-      matrix: ${{ steps.packages.outputs.matrix }}
+      result: ${{ steps.packages.outputs.result }}
     steps:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
-      - name: Configure Git safe directory
-        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
-
-      - name: Discover release-tracked packages
+      - name: Discover package updates
         id: packages
-        run: echo "matrix=$(python scripts/packages_matrix.py)" >> "$GITHUB_OUTPUT"
+        run: echo "result=$(python scripts/updates_matrix.py)" >> "$GITHUB_OUTPUT"
 
   update:
     needs: discover
-    if: needs.discover.result == 'success'
+    if: >-
+      needs.discover.result == 'success' &&
+      fromJSON(needs.discover.outputs.result).has_updates
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     strategy:
       fail-fast: false
-      matrix: ${{ fromJSON(needs.discover.outputs.matrix) }}
+      matrix: ${{ fromJSON(needs.discover.outputs.result).matrix }}
     defaults:
       run:
         shell: bash
@@ -74,9 +67,8 @@ jobs:
         id: release
         env:
           ATOM: ${{ matrix.atom }}
-        run: |
-          PROBE="scripts/latest_versions/${ATOM}.py"
-          scripts/bump_packages.py "$ATOM" "$("$PROBE")" >> "$GITHUB_OUTPUT"
+          VERSION: ${{ matrix.version }}
+        run: scripts/bump_packages.py "$ATOM" "$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Run package QA on the generated ebuild
         if: steps.release.outputs.updated == 'true'

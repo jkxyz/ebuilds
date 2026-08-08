@@ -176,6 +176,38 @@ def _run_tool(runner: Runner, command: list[str], directory: Path) -> None:
     runner(command, **arguments)
 
 
+def check_bump(
+    atom: str,
+    version: str,
+    *,
+    root: Path = REPOSITORY_ROOT,
+) -> BumpResult:
+    """Determine whether ``atom`` needs ``version`` without changing files."""
+
+    requested = validate_version(version)
+    current = highest(non_live_ebuilds(ebuilds(atom, root)))
+    comparison = compare_versions(requested, current.version)
+    if comparison < 0 and compare_versions(requested, without_revision(current.version)) == 0:
+        comparison = 0
+    if comparison < 0:
+        raise BumpError(
+            f"requested version {requested} is older than local version {current.version} for {atom}"
+        )
+
+    directory = package_directory(atom, root)
+    return BumpResult(
+        atom=atom,
+        previous_version=current.version,
+        version=requested,
+        updated=comparison > 0,
+        ebuild=(
+            f"{directory.name}-{requested}{EBUILD_SUFFIX}"
+            if comparison > 0
+            else current.path.name
+        ),
+    )
+
+
 def bump(
     atom: str,
     version: str,
@@ -188,27 +220,16 @@ def bump(
     if runner is None:
         runner = subprocess.run
 
-    requested = validate_version(version)
+    result = check_bump(atom, version, root=root)
+    if not result.updated:
+        return result
+
+    requested = result.version
     releases = ebuilds(atom, root)
     current = highest(non_live_ebuilds(releases))
-    comparison = compare_versions(requested, current.version)
-    if comparison < 0 and compare_versions(requested, without_revision(current.version)) == 0:
-        comparison = 0
-    if comparison < 0:
-        raise BumpError(
-            f"requested version {requested} is older than local version {current.version} for {atom}"
-        )
 
     directory = package_directory(atom, root)
-    destination = directory / f"{directory.name}-{requested}{EBUILD_SUFFIX}"
-    if comparison == 0:
-        return BumpResult(
-            atom=atom,
-            previous_version=current.version,
-            version=requested,
-            updated=False,
-            ebuild=current.path.name,
-        )
+    destination = directory / result.ebuild
     if destination.exists():
         raise BumpError(f"destination ebuild already exists: {destination.name}")
 
@@ -237,7 +258,7 @@ def bump(
 
     return BumpResult(
         atom=atom,
-        previous_version=current.version,
+        previous_version=result.previous_version,
         version=requested,
         updated=True,
         ebuild=destination.name,

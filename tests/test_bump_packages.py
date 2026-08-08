@@ -54,6 +54,20 @@ class BumpFixture(unittest.TestCase):
 
 
 class BumpTests(BumpFixture):
+    def test_check_bump_reports_update_without_changing_files(self):
+        current = self.add("1.1.0", "~amd64 ~arm64")
+
+        result = bump_packages.check_bump(
+            "app-test/fixture-bin", "1.2.0", root=self.root
+        )
+
+        self.assertTrue(result.updated)
+        self.assertEqual(result.previous_version, "1.1.0")
+        self.assertEqual(result.version, "1.2.0")
+        self.assertEqual(result.ebuild, "fixture-bin-1.2.0.ebuild")
+        self.assertTrue(current.exists())
+        self.assertFalse((self.package / result.ebuild).exists())
+
     def test_current_version_is_a_noop(self):
         self.add("1.2.0", "~amd64 ~arm64")
         calls = []
