@@ -102,5 +102,38 @@ class CliProbeTests(unittest.TestCase):
         self.assertEqual(stderr.getvalue(), "")
 
 
+class NextcloudProbeTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.probe = load_probe(
+            "scripts/latest_versions/net-misc/nextcloud-client.py",
+            "nextcloud_latest_version",
+        )
+
+    def test_parses_latest_stable_release(self):
+        payload = '{"tag_name":"v34.0.1","draft":false,"prerelease":false}'
+        self.assertEqual(self.probe.parse_release(payload), "34.0.1")
+
+    def test_rejects_prereleases_and_malformed_versions(self):
+        with self.assertRaises(RuntimeError):
+            self.probe.parse_release(
+                '{"tag_name":"v34.0.2-rc1","draft":false,"prerelease":true}'
+            )
+        with self.assertRaises(RuntimeError):
+            self.probe.parse_release(
+                '{"tag_name":"latest","draft":false,"prerelease":false}'
+            )
+
+    def test_main_prints_only_the_version(self):
+        self.probe.latest_stable_version = lambda: "34.0.1"
+        stdout = StringIO()
+        stderr = StringIO()
+        with redirect_stdout(stdout), redirect_stderr(stderr):
+            result = self.probe.main([])
+        self.assertEqual(result, 0)
+        self.assertEqual(stdout.getvalue(), "34.0.1\n")
+        self.assertEqual(stderr.getvalue(), "")
+
+
 if __name__ == "__main__":
     unittest.main()

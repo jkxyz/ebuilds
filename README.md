@@ -1,6 +1,6 @@
 # jkxyz/ebuilds
 
-A [Gentoo](https://www.gentoo.org/) Portage overlay for packages maintained by [jkxyz](https://github.com/jkxyz). It provides the 1Password desktop application and command-line client for amd64 and arm64 systems.
+A [Gentoo](https://www.gentoo.org/) Portage overlay for packages maintained by [jkxyz](https://github.com/jkxyz). It provides the Nextcloud and 1Password desktop clients, plus the 1Password command-line client, for amd64 and arm64 systems.
 
 ## Installation
 
@@ -24,6 +24,12 @@ Install the desktop application with Portage:
 emerge --ask app-admin/1password-bin
 ```
 
+Install the Nextcloud desktop client with Portage:
+
+```bash
+emerge --ask net-misc/nextcloud-client
+```
+
 New upstream releases enter the overlay with testing keywords for both supported architectures. If the newest desktop version has not been stabilized yet, accept its keyword explicitly in `/etc/portage/package.accept_keywords/1password-bin`:
 
 ```text
@@ -36,14 +42,19 @@ Use `~arm64` instead on arm64. The CLI package is also testing-only until it has
 app-admin/op-cli-bin ~amd64
 ```
 
+The Nextcloud desktop client is testing-only on both supported architectures. Accept `~amd64` or `~arm64` for `net-misc/nextcloud-client` before installing it.
+
 The previous stable desktop ebuild remains available while either architecture still needs it, and amd64 and arm64 may be stabilized independently after testing.
 
 ## USE flags
 
 - `cli` — install the overlay's `app-admin/op-cli-bin` command-line client.
 - `policykit` — pull in `sys-auth/polkit` for polkit integration.
+- `dolphin` — install the Nextcloud Dolphin extension.
+- `nautilus` — install the Nextcloud Nautilus extension.
+- `webengine` — enable Nextcloud's legacy Flow1 login.
 
-Both flags are disabled by default.
+The overlay does not set defaults for these flags.
 
 ## Maintenance
 
@@ -54,6 +65,7 @@ Run the probes directly to check upstream versions:
 ```bash
 scripts/latest_versions/app-admin/1password-bin.py
 scripts/latest_versions/app-admin/op-cli-bin.py
+scripts/latest_versions/net-misc/nextcloud-client.py
 ```
 
 For a manual bump, provide the atom and version from the repository root:
@@ -61,6 +73,7 @@ For a manual bump, provide the atom and version from the repository root:
 ```bash
 scripts/bump_packages.py app-admin/1password-bin VERSION
 scripts/bump_packages.py app-admin/op-cli-bin VERSION
+scripts/bump_packages.py net-misc/nextcloud-client VERSION
 ```
 
 Regenerate the affected Manifest, run package QA, and inspect the complete diff before committing:
@@ -68,6 +81,8 @@ Regenerate the affected Manifest, run package QA, and inspect the complete diff 
 ```bash
 pkgdev manifest app-admin/1password-bin
 pkgcheck scan --exit GentooCI --cache-dir /tmp/pkgcheck app-admin/1password-bin
+pkgdev manifest net-misc/nextcloud-client
+pkgcheck scan --exit GentooCI --cache-dir /tmp/pkgcheck net-misc/nextcloud-client
 ```
 
 The tools used by CI are defined in `.github/gentoo-tools/Containerfile` if a matching local environment is needed.
@@ -98,7 +113,7 @@ pkgcheck scan --exit GentooCI --cache-dir /tmp/pkgcheck app-admin/op-cli-bin app
 
 ## Provenance
 
-The `app-admin/1password-bin` ebuild is based on [jaredallard/overlay](https://github.com/jaredallard/overlay). The CLI package follows [Gentoo's historical `op-cli-bin` ebuild](https://github.com/gentoo/gentoo/blob/master/app-admin/op-cli-bin/op-cli-bin-2.23.0.ebuild) and uses 1Password's official release artifacts. This is an unofficial community overlay and is not affiliated with or endorsed by 1Password or the Gentoo project.
+The `net-misc/nextcloud-client` ebuild is based on [Gentoo's official 33.0.5 ebuild](https://gitweb.gentoo.org/repo/gentoo.git/tree/net-misc/nextcloud-client/nextcloud-client-33.0.5.ebuild). The `app-admin/1password-bin` ebuild is based on [jaredallard/overlay](https://github.com/jaredallard/overlay). The CLI package follows [Gentoo's historical `op-cli-bin` ebuild](https://github.com/gentoo/gentoo/blob/master/app-admin/op-cli-bin/op-cli-bin-2.23.0.ebuild) and uses 1Password's official release artifacts. This is an unofficial community overlay and is not affiliated with or endorsed by Nextcloud, 1Password, or the Gentoo project.
 
 ## License
 
