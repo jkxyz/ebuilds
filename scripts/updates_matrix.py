@@ -20,18 +20,15 @@ ProbeRunner = Callable[[Path], str]
 
 
 def discover(root: Path = REPOSITORY_ROOT) -> list[dict[str, str]]:
-    """Discover packages opted into automation by an atom-mirrored probe."""
+    """Discover packages opted into automation by a package-local probe."""
 
     packages: list[dict[str, str]] = []
-    probes_root = root / "scripts" / "latest_versions"
-    for probe in sorted(probes_root.glob("*/*.py")):
+    for probe in sorted(root.glob("*/*/latest_version.py")):
         if not probe.is_file():
             continue
-        relative = probe.relative_to(probes_root)
-        if len(relative.parts) != 2:
-            continue
-        category, filename = relative.parts
-        package = Path(filename).stem
+        package_path = probe.parent
+        category = package_path.parent.name
+        package = package_path.name
         package_path = root / category / package
         if not list(package_path.glob(f"{package}-*.ebuild")):
             continue
@@ -72,9 +69,8 @@ def updates(
         probe_runner = lambda probe: run_probe(probe, root)
 
     result: list[dict[str, str]] = []
-    probes_root = root / "scripts" / "latest_versions"
     for package in discover(root):
-        probe = probes_root / f"{package['atom']}.py"
+        probe = root / package["atom"] / "latest_version.py"
         status = check_bump(package["atom"], probe_runner(probe), root=root)
         if status.updated:
             result.append({**package, "version": status.version})

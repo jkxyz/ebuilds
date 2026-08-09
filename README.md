@@ -65,15 +65,15 @@ The overlay does not set defaults for these flags.
 
 ## Maintenance
 
-The `Update packages` workflow checks tracked packages daily and opens a pull request when it finds a new stable release. An executable `scripts/latest_versions/CATEGORY/PACKAGE.py` probe opts a package into these checks and prints its latest stable Portage version. Discovery and version comparison run directly on the Ubuntu runner; the Gentoo tools container starts only for packages that actually need an update.
+The `Update packages` workflow checks tracked packages daily and opens a pull request when it finds a new stable release. An executable `CATEGORY/PACKAGE/latest_version.py` probe opts a package into these checks and prints its latest stable Portage version. Discovery and version comparison run directly on the Ubuntu runner; the Gentoo tools container starts only for packages that actually need an update.
 
 Run the probes directly to check upstream versions:
 
 ```bash
-scripts/latest_versions/app-admin/1password-bin.py
-scripts/latest_versions/app-admin/op-cli-bin.py
-scripts/latest_versions/net-misc/nextcloud-client.py
-scripts/latest_versions/www-client/helium-bin.py
+app-admin/1password-bin/latest_version.py
+app-admin/op-cli-bin/latest_version.py
+net-misc/nextcloud-client/latest_version.py
+www-client/helium-bin/latest_version.py
 ```
 
 For a manual bump, provide the atom and version from the repository root:

@@ -25,7 +25,7 @@ class DesktopProbeTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.probe = load_probe(
-            "scripts/latest_versions/app-admin/1password-bin.py", "desktop_latest_version"
+            "app-admin/1password-bin/latest_version.py", "desktop_latest_version"
         )
 
     def test_normalizes_epoch_and_revision_and_selects_newest_stable(self):
@@ -70,7 +70,7 @@ class CliProbeTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.probe = load_probe(
-            "scripts/latest_versions/app-admin/op-cli-bin.py", "cli_latest_version"
+            "app-admin/op-cli-bin/latest_version.py", "cli_latest_version"
         )
 
     def test_selects_newest_stable_article_and_ignores_prereleases(self):
@@ -107,7 +107,7 @@ class NextcloudProbeTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.probe = load_probe(
-            "scripts/latest_versions/net-misc/nextcloud-client.py",
+            "net-misc/nextcloud-client/latest_version.py",
             "nextcloud_latest_version",
         )
 
@@ -140,7 +140,7 @@ class HeliumProbeTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.probe = load_probe(
-            "scripts/latest_versions/www-client/helium-bin.py",
+            "www-client/helium-bin/latest_version.py",
             "helium_latest_version",
         )
 

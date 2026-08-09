@@ -17,25 +17,20 @@ class UpdatesMatrixTests(unittest.TestCase):
     def test_discovery_is_opt_in_and_sorted(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
-            probes = root / "scripts" / "latest_versions" / "app-test"
-            probes.mkdir(parents=True)
 
             fixture = root / "app-test" / "fixture-bin"
             fixture.mkdir(parents=True)
-            (probes / "fixture-bin.py").write_text("print('1.0.0')\n", encoding="utf-8")
+            (fixture / "latest_version.py").write_text("print('1.0.0')\n", encoding="utf-8")
             make_ebuild(fixture, "fixture-bin", "1.0.0")
 
             another = root / "app-test" / "another"
             another.mkdir()
-            (probes / "another.py").write_text("print('1.0.0')\n", encoding="utf-8")
+            (another / "latest_version.py").write_text("print('1.0.0')\n", encoding="utf-8")
             make_ebuild(another, "another", "1.0.0")
 
             without_ebuild = root / "app-test" / "no-ebuild"
             without_ebuild.mkdir()
-            (probes / "no-ebuild.py").write_text("", encoding="utf-8")
-            (root / "scripts" / "latest_versions" / "unrelated.py").write_text(
-                "", encoding="utf-8"
-            )
+            (without_ebuild / "latest_version.py").write_text("", encoding="utf-8")
 
             self.assertEqual(
                 updates_matrix.discover(root),
@@ -52,17 +47,15 @@ class UpdatesMatrixTests(unittest.TestCase):
     def test_matrix_contains_only_newer_releases(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
-            probes = root / "scripts" / "latest_versions" / "app-test"
-            probes.mkdir(parents=True)
 
             current = root / "app-test" / "current"
             current.mkdir(parents=True)
-            (probes / "current.py").write_text("print('2.0.0')\n", encoding="utf-8")
+            (current / "latest_version.py").write_text("print('2.0.0')\n", encoding="utf-8")
             make_ebuild(current, "current", "2.0.0-r1")
 
             outdated = root / "app-test" / "outdated"
             outdated.mkdir()
-            (probes / "outdated.py").write_text("print('1.2.0')\n", encoding="utf-8")
+            (outdated / "latest_version.py").write_text("print('1.2.0')\n", encoding="utf-8")
             make_ebuild(outdated, "outdated", "1.1.0")
 
             self.assertEqual(
@@ -83,11 +76,9 @@ class UpdatesMatrixTests(unittest.TestCase):
     def test_older_probe_version_fails_discovery(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
-            probes = root / "scripts" / "latest_versions" / "app-test"
-            probes.mkdir(parents=True)
             package = root / "app-test" / "fixture-bin"
             package.mkdir(parents=True)
-            (probes / "fixture-bin.py").write_text("print('1.1.0')\n", encoding="utf-8")
+            (package / "latest_version.py").write_text("print('1.1.0')\n", encoding="utf-8")
             make_ebuild(package, "fixture-bin", "1.2.0")
 
             with self.assertRaisesRegex(updates_matrix.BumpError, "older than local version"):
@@ -96,11 +87,9 @@ class UpdatesMatrixTests(unittest.TestCase):
     def test_probe_must_print_exactly_one_line(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
-            probes = root / "scripts" / "latest_versions" / "app-test"
-            probes.mkdir(parents=True)
             package = root / "app-test" / "fixture-bin"
             package.mkdir(parents=True)
-            (probes / "fixture-bin.py").write_text(
+            (package / "latest_version.py").write_text(
                 "print('1.1.0')\nprint('unexpected')\n", encoding="utf-8"
             )
             make_ebuild(package, "fixture-bin", "1.0.0")
@@ -111,11 +100,9 @@ class UpdatesMatrixTests(unittest.TestCase):
     def test_failed_probe_fails_discovery_with_its_error(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
-            probes = root / "scripts" / "latest_versions" / "app-test"
-            probes.mkdir(parents=True)
             package = root / "app-test" / "fixture-bin"
             package.mkdir(parents=True)
-            (probes / "fixture-bin.py").write_text(
+            (package / "latest_version.py").write_text(
                 "import sys\nprint('upstream unavailable', file=sys.stderr)\nraise SystemExit(1)\n",
                 encoding="utf-8",
             )
