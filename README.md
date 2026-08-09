@@ -1,6 +1,6 @@
 # jkxyz/ebuilds
 
-A [Gentoo](https://www.gentoo.org/) Portage overlay for packages maintained by [jkxyz](https://github.com/jkxyz). It provides the Nextcloud and 1Password desktop clients, plus the 1Password command-line client, for amd64 and arm64 systems.
+A [Gentoo](https://www.gentoo.org/) Portage overlay for packages maintained by [jkxyz](https://github.com/jkxyz). It provides the Helium browser, the Nextcloud and 1Password desktop clients, and the 1Password command-line client for amd64 and arm64 systems.
 
 ## Installation
 
@@ -30,6 +30,12 @@ Install the Nextcloud desktop client with Portage:
 emerge --ask net-misc/nextcloud-client
 ```
 
+Helium is testing-only on both supported architectures. Accept `~amd64` or `~arm64` for `www-client/helium-bin`, then install it with Portage:
+
+```bash
+emerge --ask www-client/helium-bin
+```
+
 New upstream releases enter the overlay with testing keywords for both supported architectures. If the newest desktop version has not been stabilized yet, accept its keyword explicitly in `/etc/portage/package.accept_keywords/1password-bin`:
 
 ```text
@@ -53,6 +59,7 @@ The previous stable desktop ebuild remains available while either architecture s
 - `dolphin` — install the Nextcloud Dolphin extension.
 - `nautilus` — install the Nextcloud Nautilus extension.
 - `webengine` — enable Nextcloud's legacy Flow1 login.
+- `qt6` — enable Helium's bundled Qt 6 theme integration shim.
 
 The overlay does not set defaults for these flags.
 
@@ -66,6 +73,7 @@ Run the probes directly to check upstream versions:
 scripts/latest_versions/app-admin/1password-bin.py
 scripts/latest_versions/app-admin/op-cli-bin.py
 scripts/latest_versions/net-misc/nextcloud-client.py
+scripts/latest_versions/www-client/helium-bin.py
 ```
 
 For a manual bump, provide the atom and version from the repository root:
@@ -74,6 +82,7 @@ For a manual bump, provide the atom and version from the repository root:
 scripts/bump_packages.py app-admin/1password-bin VERSION
 scripts/bump_packages.py app-admin/op-cli-bin VERSION
 scripts/bump_packages.py net-misc/nextcloud-client VERSION
+scripts/bump_packages.py www-client/helium-bin VERSION
 ```
 
 Regenerate the affected Manifest, run package QA, and inspect the complete diff before committing:
@@ -83,6 +92,8 @@ pkgdev manifest app-admin/1password-bin
 pkgcheck scan --exit GentooCI --cache-dir /tmp/pkgcheck app-admin/1password-bin
 pkgdev manifest net-misc/nextcloud-client
 pkgcheck scan --exit GentooCI --cache-dir /tmp/pkgcheck net-misc/nextcloud-client
+pkgdev manifest www-client/helium-bin
+pkgcheck scan --exit GentooCI --cache-dir /tmp/pkgcheck www-client/helium-bin
 ```
 
 The tools used by CI are defined in `.github/gentoo-tools/Containerfile` if a matching local environment is needed.
@@ -113,7 +124,7 @@ pkgcheck scan --exit GentooCI --cache-dir /tmp/pkgcheck app-admin/op-cli-bin app
 
 ## Provenance
 
-The `net-misc/nextcloud-client` ebuild is based on [Gentoo's official 33.0.5 ebuild](https://gitweb.gentoo.org/repo/gentoo.git/tree/net-misc/nextcloud-client/nextcloud-client-33.0.5.ebuild). The `app-admin/1password-bin` ebuild is based on [jaredallard/overlay](https://github.com/jaredallard/overlay). The CLI package follows [Gentoo's historical `op-cli-bin` ebuild](https://github.com/gentoo/gentoo/blob/master/app-admin/op-cli-bin/op-cli-bin-2.23.0.ebuild) and uses 1Password's official release artifacts. This is an unofficial community overlay and is not affiliated with or endorsed by Nextcloud, 1Password, or the Gentoo project.
+The `net-misc/nextcloud-client` ebuild is based on [Gentoo's official 33.0.5 ebuild](https://gitweb.gentoo.org/repo/gentoo.git/tree/net-misc/nextcloud-client/nextcloud-client-33.0.5.ebuild). The `app-admin/1password-bin` ebuild is based on [jaredallard/overlay](https://github.com/jaredallard/overlay). The CLI package follows [Gentoo's historical `op-cli-bin` ebuild](https://github.com/gentoo/gentoo/blob/master/app-admin/op-cli-bin/op-cli-bin-2.23.0.ebuild) and uses 1Password's official release artifacts. The Helium package uses the official architecture-specific Linux tarballs. This is an unofficial community overlay and is not affiliated with or endorsed by Helium, Nextcloud, 1Password, or the Gentoo project.
 
 ## License
 

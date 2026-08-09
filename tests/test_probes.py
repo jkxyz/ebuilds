@@ -3,6 +3,7 @@ from __future__ import annotations
 from contextlib import redirect_stderr, redirect_stdout
 import importlib.util
 from io import StringIO
+import json
 from pathlib import Path
 import unittest
 
@@ -132,6 +133,54 @@ class NextcloudProbeTests(unittest.TestCase):
             result = self.probe.main([])
         self.assertEqual(result, 0)
         self.assertEqual(stdout.getvalue(), "34.0.1\n")
+        self.assertEqual(stderr.getvalue(), "")
+
+
+class HeliumProbeTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.probe = load_probe(
+            "scripts/latest_versions/www-client/helium-bin.py",
+            "helium_latest_version",
+        )
+
+    @staticmethod
+    def release(version: str = "0.15.3.1") -> str:
+        return f"""{{
+            "tag_name": "{version}",
+            "draft": false,
+            "prerelease": false,
+            "assets": [
+                {{"name": "helium-{version}-x86_64_linux.tar.xz"}},
+                {{"name": "helium-{version}-arm64_linux.tar.xz"}}
+            ]
+        }}"""
+
+    def test_parses_stable_release_with_both_tarballs(self):
+        self.assertEqual(self.probe.parse_release(self.release()), "0.15.3.1")
+
+    def test_rejects_prereleases_and_incomplete_assets(self):
+        prerelease = self.release().replace('"prerelease": false', '"prerelease": true')
+        with self.assertRaises(RuntimeError):
+            self.probe.parse_release(prerelease)
+
+        release = json.loads(self.release())
+        release["assets"].pop()
+        with self.assertRaisesRegex(RuntimeError, "arm64_linux.tar.xz"):
+            self.probe.parse_release(json.dumps(release))
+
+    def test_rejects_malformed_version(self):
+        with self.assertRaisesRegex(RuntimeError, "unsupported stable Helium version"):
+            self.probe.parse_release(self.release("latest"))
+
+    def test_main_prints_only_the_version(self):
+        self.probe.latest_stable_version = lambda: "0.15.3.1"
+        stdout = StringIO()
+        stderr = StringIO()
+        with redirect_stdout(stdout), redirect_stderr(stderr):
+            result = self.probe.main([])
+        self.assertEqual(result, 0)
+        self.assertEqual(stdout.getvalue(), "0.15.3.1\n")
         self.assertEqual(stderr.getvalue(), "")
 
 

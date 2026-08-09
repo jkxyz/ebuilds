@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<longdescription>
+		Helium is a privacy-focused Chromium-based web browser with integrated
+		content blocking and a minimal user interface.
+	</longdescription>
+	<use>
+		<flag name="qt6">Enable the bundled Qt 6 theme integration shim.</flag>
+	</use>
+	<upstream>
+		<remote-id type="github">imputnet/helium-linux</remote-id>
+		<changelog>https://github.com/imputnet/helium-linux/releases</changelog>
+	</upstream>
+</pkgmetadata>
