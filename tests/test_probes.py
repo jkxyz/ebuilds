@@ -66,6 +66,64 @@ Version: 8.12.31-beta.1-1
         self.assertEqual(stderr.getvalue(), "")
 
 
+class ChatGPTProbeTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.probe = load_probe(
+            "app-misc/chatgpt-bin/latest_version.py", "chatgpt_latest_version"
+        )
+
+    @staticmethod
+    def package_index(architecture: str, version: str = "26.803.81509") -> str:
+        return f"""Package: chatgpt
+Version: {version}
+Architecture: {architecture}
+Filename: pool/main/c/chatgpt/chatgpt_{version}_{architecture}.deb
+
+"""
+
+    def test_selects_newest_stable_release_with_expected_artifact(self):
+        package_index = (
+            self.package_index("amd64", "26.803.81508")
+            + self.package_index("amd64", "26.803.81509")
+        )
+        self.assertEqual(
+            self.probe.parse_packages(package_index, "amd64"), "26.803.81509"
+        )
+
+    def test_rejects_wrong_architecture_and_malformed_artifact(self):
+        with self.assertRaises(RuntimeError):
+            self.probe.parse_packages(self.package_index("arm64"), "amd64")
+        malformed = self.package_index("amd64").replace(
+            "chatgpt_26.803.81509_amd64.deb", "chatgpt_latest_amd64.deb"
+        )
+        with self.assertRaises(RuntimeError):
+            self.probe.parse_packages(malformed, "amd64")
+
+    def test_requires_architecture_versions_to_match(self):
+        with self.assertRaisesRegex(RuntimeError, "architecture versions do not match"):
+            self.probe.latest_stable_version(
+                {
+                    "amd64": self.package_index("amd64", "26.803.81509"),
+                    "arm64": self.package_index("arm64", "26.803.81508"),
+                }
+            )
+
+    def test_main_prints_only_the_version(self):
+        original = self.probe.latest_stable_version
+        try:
+            self.probe.latest_stable_version = lambda: "26.803.81509"
+            stdout = StringIO()
+            stderr = StringIO()
+            with redirect_stdout(stdout), redirect_stderr(stderr):
+                result = self.probe.main([])
+        finally:
+            self.probe.latest_stable_version = original
+        self.assertEqual(result, 0)
+        self.assertEqual(stdout.getvalue(), "26.803.81509\n")
+        self.assertEqual(stderr.getvalue(), "")
+
+
 class CliProbeTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):

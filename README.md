@@ -1,6 +1,6 @@
 # jkxyz/ebuilds
 
-A [Gentoo](https://www.gentoo.org/) Portage overlay for packages maintained by [jkxyz](https://github.com/jkxyz). It provides the Helium browser, the Nextcloud and 1Password desktop clients, and the 1Password command-line client for amd64 and arm64 systems.
+A [Gentoo](https://www.gentoo.org/) Portage overlay for packages maintained by [jkxyz](https://github.com/jkxyz). It provides the ChatGPT, Nextcloud, and 1Password desktop clients, the Helium browser, and the 1Password command-line client for amd64 and arm64 systems.
 
 ## Installation
 
@@ -11,11 +11,12 @@ eselect repository add jkxyz-ebuilds git https://github.com/jkxyz/ebuilds.git
 emaint sync -r jkxyz-ebuilds
 ```
 
-1Password is proprietary software. Accept its license for the packages you intend to install in the `package.license` configuration (for example, `/etc/portage/package.license/1password-bin`):
+1Password and ChatGPT are proprietary software. Accept their licenses for the packages you intend to install in the `package.license` configuration (for example, `/etc/portage/package.license/proprietary-apps`):
 
 ```text
 app-admin/1password-bin all-rights-reserved
 app-admin/op-cli-bin all-rights-reserved
+app-misc/chatgpt-bin all-rights-reserved
 ```
 
 Install the desktop application with Portage:
@@ -28,6 +29,12 @@ Install the Nextcloud desktop client with Portage:
 
 ```bash
 emerge --ask net-misc/nextcloud-client
+```
+
+ChatGPT for Linux is testing-only on both supported architectures. Accept `~amd64` or `~arm64` for `app-misc/chatgpt-bin`, then install it with Portage:
+
+```bash
+emerge --ask app-misc/chatgpt-bin
 ```
 
 Helium is testing-only on both supported architectures. Accept `~amd64` or `~arm64` for `www-client/helium-bin`, then install it with Portage:
@@ -72,6 +79,7 @@ Run the probes directly to check upstream versions:
 ```bash
 app-admin/1password-bin/latest_version.py
 app-admin/op-cli-bin/latest_version.py
+app-misc/chatgpt-bin/latest_version.py
 net-misc/nextcloud-client/latest_version.py
 www-client/helium-bin/latest_version.py
 ```
@@ -81,6 +89,7 @@ For a manual bump, provide the atom and version from the repository root:
 ```bash
 scripts/bump_packages.py app-admin/1password-bin VERSION
 scripts/bump_packages.py app-admin/op-cli-bin VERSION
+scripts/bump_packages.py app-misc/chatgpt-bin VERSION
 scripts/bump_packages.py net-misc/nextcloud-client VERSION
 scripts/bump_packages.py www-client/helium-bin VERSION
 ```
@@ -90,6 +99,8 @@ Regenerate the affected Manifest, run package QA, and inspect the complete diff 
 ```bash
 pkgdev manifest app-admin/1password-bin
 pkgcheck scan --exit GentooCI --cache-dir /tmp/pkgcheck app-admin/1password-bin
+pkgdev manifest app-misc/chatgpt-bin
+pkgcheck scan --exit GentooCI --cache-dir /tmp/pkgcheck app-misc/chatgpt-bin
 pkgdev manifest net-misc/nextcloud-client
 pkgcheck scan --exit GentooCI --cache-dir /tmp/pkgcheck net-misc/nextcloud-client
 pkgdev manifest www-client/helium-bin
@@ -124,8 +135,8 @@ pkgcheck scan --exit GentooCI --cache-dir /tmp/pkgcheck app-admin/op-cli-bin app
 
 ## Provenance
 
-The `net-misc/nextcloud-client` ebuild is based on [Gentoo's official 33.0.5 ebuild](https://gitweb.gentoo.org/repo/gentoo.git/tree/net-misc/nextcloud-client/nextcloud-client-33.0.5.ebuild). The `app-admin/1password-bin` ebuild is based on [jaredallard/overlay](https://github.com/jaredallard/overlay). The CLI package follows [Gentoo's historical `op-cli-bin` ebuild](https://github.com/gentoo/gentoo/blob/master/app-admin/op-cli-bin/op-cli-bin-2.23.0.ebuild) and uses 1Password's official release artifacts. The Helium package uses the official architecture-specific Linux tarballs. This is an unofficial community overlay and is not affiliated with or endorsed by Helium, Nextcloud, 1Password, or the Gentoo project.
+The `net-misc/nextcloud-client` ebuild is based on [Gentoo's official 33.0.5 ebuild](https://gitweb.gentoo.org/repo/gentoo.git/tree/net-misc/nextcloud-client/nextcloud-client-33.0.5.ebuild). The `app-admin/1password-bin` ebuild is based on [jaredallard/overlay](https://github.com/jaredallard/overlay). The CLI package follows [Gentoo's historical `op-cli-bin` ebuild](https://github.com/gentoo/gentoo/blob/master/app-admin/op-cli-bin/op-cli-bin-2.23.0.ebuild) and uses 1Password's official release artifacts. ChatGPT and Helium use their upstream architecture-specific Linux packages. This is an unofficial community overlay and is not affiliated with or endorsed by OpenAI, Helium, Nextcloud, 1Password, or the Gentoo project.
 
 ## License
 
-The overlay's own files are licensed under the [GNU General Public License v2.0](LICENSE). This does not change the upstream licenses of packaged software; 1Password remains proprietary software.
+The overlay's own files are licensed under the [GNU General Public License v2.0](LICENSE). This does not change the upstream licenses of packaged software; ChatGPT and 1Password remain proprietary software.

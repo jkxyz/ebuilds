@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<longdescription>
+		ChatGPT is OpenAI's desktop application for Chat, Work, and Codex. It can
+		work with local projects, files, and development tools.
+	</longdescription>
+	<upstream>
+		<changelog>https://help.openai.com/en/articles/6825453-chatgpt-release-notes</changelog>
+		<bugs-to>https://help.openai.com/</bugs-to>
+	</upstream>
+</pkgmetadata>
