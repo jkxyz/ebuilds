@@ -1,0 +1,19 @@
+#!/bin/sh
+
+if [ "${XDG_SESSION_TYPE-}" = wayland ]; then
+	ozone_platform_set=false
+	for arg do
+		case ${arg} in
+			--ozone-platform | --ozone-platform=*)
+				ozone_platform_set=true
+				break
+				;;
+		esac
+	done
+
+	if [ "${ozone_platform_set}" = false ]; then
+		set -- --ozone-platform=wayland "$@"
+	fi
+fi
+
+exec "$(dirname "$(readlink -f "$0")")/ChatGPT" "$@"

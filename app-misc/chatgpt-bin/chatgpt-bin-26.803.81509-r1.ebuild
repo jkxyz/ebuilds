@@ -9,8 +9,8 @@ DESCRIPTION="Official ChatGPT desktop application"
 HOMEPAGE="https://openai.com/codex/ https://developers.openai.com/codex/app"
 BASE_URI="https://persistent.oaistatic.com/codex-app-prod/linux/deb/pool/main/c/chatgpt"
 SRC_URI="
-	amd64? ( ${BASE_URI}/chatgpt_${PV}_amd64.deb -> ${P}-amd64.deb )
-	arm64? ( ${BASE_URI}/chatgpt_${PV}_arm64.deb -> ${P}-arm64.deb )
+	amd64? ( ${BASE_URI}/chatgpt_${PV}_amd64.deb -> ${PN}-${PV}-amd64.deb )
+	arm64? ( ${BASE_URI}/chatgpt_${PV}_arm64.deb -> ${PN}-${PV}-arm64.deb )
 "
 S="${WORKDIR}"
 
@@ -27,6 +27,7 @@ RDEPEND="
 	dev-libs/nspr
 	dev-libs/nss
 	dev-libs/openssl
+	dev-libs/wayland
 	dev-vcs/git
 	media-gfx/graphite2
 	media-libs/fontconfig
@@ -39,7 +40,7 @@ RDEPEND="
 	virtual/udev
 	x11-libs/cairo
 	x11-libs/gdk-pixbuf:2
-	x11-libs/gtk+:3[X]
+	x11-libs/gtk+:3[X,wayland]
 	x11-libs/libdrm
 	x11-libs/libnotify
 	x11-libs/libX11
@@ -71,6 +72,8 @@ src_install() {
 
 	dosym ../lib/chatgpt/codex-launcher /usr/bin/chatgpt
 	cp -a "${S}"/usr/lib "${ED}"/usr/ || die
+	exeinto /usr/lib/chatgpt
+	newexe "${FILESDIR}"/chatgpt-launcher codex-launcher
 
 	insinto /etc/apparmor.d
 	doins etc/apparmor.d/chatgpt
