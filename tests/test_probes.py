@@ -242,5 +242,132 @@ class HeliumProbeTests(unittest.TestCase):
         self.assertEqual(stderr.getvalue(), "")
 
 
+class DropboxProbeTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.probe = load_probe(
+            "net-misc/dropbox/latest_version.py", "dropbox_latest_version"
+        )
+
+    def test_parses_stable_x86_64_artifact(self):
+        url = (
+            "https://edge.dropboxstatic.com/dbx-releng/client/"
+            "dropbox-lnx.x86_64-264.4.3421.tar.gz"
+        )
+        self.assertEqual(self.probe.parse_artifact_url(url), "264.4.3421")
+
+    def test_rejects_unexpected_artifacts_and_hosts(self):
+        with self.assertRaises(RuntimeError):
+            self.probe.parse_artifact_url(
+                "https://edge.dropboxstatic.com/dbx-releng/client/"
+                "dropbox-lnx.arm64-264.4.3421.tar.gz"
+            )
+        with self.assertRaises(RuntimeError):
+            self.probe.parse_artifact_url(
+                "https://example.com/dbx-releng/client/"
+                "dropbox-lnx.x86_64-264.4.3421.tar.gz"
+            )
+        with self.assertRaises(RuntimeError):
+            self.probe.parse_artifact_url(
+                "https://edge.dropboxstatic.com/dbx-releng/client/"
+                "dropbox-lnx.x86_64-264.4.3421-beta.tar.gz"
+            )
+
+    def test_main_prints_only_the_version(self):
+        original = self.probe.latest_stable_version
+        try:
+            self.probe.latest_stable_version = lambda: "264.4.3421"
+            stdout = StringIO()
+            stderr = StringIO()
+            with redirect_stdout(stdout), redirect_stderr(stderr):
+                result = self.probe.main([])
+        finally:
+            self.probe.latest_stable_version = original
+        self.assertEqual(result, 0)
+        self.assertEqual(stdout.getvalue(), "264.4.3421\n")
+        self.assertEqual(stderr.getvalue(), "")
+
+
+class DropboxCliProbeTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.probe = load_probe(
+            "net-misc/dropbox-cli/latest_version.py", "dropbox_cli_latest_version"
+        )
+
+    def test_selects_newest_versioned_source_release(self):
+        index = """
+<a href="nautilus-dropbox-2026.03.20.tar.bz2">old</a>
+<a href="nautilus-dropbox-2026.05.06.tar.bz2">current</a>
+<a href="dropbox_2027.01.01_amd64.deb">unrelated</a>
+"""
+        self.assertEqual(self.probe.parse_releases(index), "2026.05.06")
+
+    def test_rejects_missing_and_invalid_release_dates(self):
+        with self.assertRaises(RuntimeError):
+            self.probe.parse_releases('<a href="dropbox.py">latest</a>')
+        with self.assertRaisesRegex(RuntimeError, "invalid Dropbox CLI release date"):
+            self.probe.parse_releases(
+                '<a href="nautilus-dropbox-2026.13.40.tar.bz2">invalid</a>'
+            )
+
+    def test_main_prints_only_the_version(self):
+        original = self.probe.latest_stable_version
+        try:
+            self.probe.latest_stable_version = lambda: "2026.05.06"
+            stdout = StringIO()
+            stderr = StringIO()
+            with redirect_stdout(stdout), redirect_stderr(stderr):
+                result = self.probe.main([])
+        finally:
+            self.probe.latest_stable_version = original
+        self.assertEqual(result, 0)
+        self.assertEqual(stdout.getvalue(), "2026.05.06\n")
+        self.assertEqual(stderr.getvalue(), "")
+
+
+class DolphinDropboxProbeTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.probe = load_probe(
+            "kde-apps/dolphin-plugins-dropbox/latest_version.py",
+            "dolphin_dropbox_latest_version",
+        )
+
+    def test_selects_newest_release_with_plugin_artifact(self):
+        releases = """
+<a href="26.04.2/">26.04.2</a>
+<a href="26.04.3/">26.04.3</a>
+<a href="26.08.0-rc1/">prerelease</a>
+"""
+        artifacts = '<a href="dolphin-plugins-26.04.3.tar.xz">source</a>'
+        self.assertEqual(
+            self.probe.latest_stable_version(releases, artifacts), "26.04.3"
+        )
+
+    def test_rejects_missing_release_or_artifact(self):
+        with self.assertRaises(RuntimeError):
+            self.probe.parse_releases('<a href="latest/">latest</a>')
+        with self.assertRaisesRegex(RuntimeError, "dolphin-plugins-26.04.3.tar.xz"):
+            self.probe.latest_stable_version(
+                '<a href="26.04.3/">26.04.3</a>',
+                '<a href="dolphin-26.04.3.tar.xz">wrong artifact</a>',
+            )
+
+    def test_main_prints_only_the_version(self):
+        original = self.probe.latest_stable_version
+        try:
+            self.probe.latest_stable_version = lambda: "26.04.3"
+            stdout = StringIO()
+            stderr = StringIO()
+            with redirect_stdout(stdout), redirect_stderr(stderr):
+                result = self.probe.main([])
+        finally:
+            self.probe.latest_stable_version = original
+        self.assertEqual(result, 0)
+        self.assertEqual(stdout.getvalue(), "26.04.3\n")
+        self.assertEqual(stderr.getvalue(), "")
+
+
 if __name__ == "__main__":
     unittest.main()

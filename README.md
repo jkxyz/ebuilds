@@ -1,6 +1,6 @@
 # jkxyz/ebuilds
 
-A small [Gentoo](https://www.gentoo.org/) Portage overlay maintained by [jkxyz](https://github.com/jkxyz). It packages the 1Password, ChatGPT, and Nextcloud desktop clients, the 1Password CLI, and the Helium browser for amd64 and arm64.
+A small [Gentoo](https://www.gentoo.org/) Portage overlay maintained by [jkxyz](https://github.com/jkxyz). It packages the 1Password, ChatGPT, Dropbox, and Nextcloud desktop clients, their related command-line or desktop integrations, and the Helium browser.
 
 ## Packages
 
@@ -11,6 +11,9 @@ Versions marked `~amd64` or `~arm64` use Gentoo testing keywords; versions marke
 | `app-admin/1password-bin` | 1Password desktop client | `8.12.28` (`amd64`, `arm64`)<br>`8.12.32` (`~amd64`, `~arm64`) | `cli` — install `app-admin/op-cli-bin`<br>`policykit` — pull in `sys-auth/polkit` for desktop authentication |
 | `app-admin/op-cli-bin` | 1Password command-line client | `2.38.1` (`~amd64`, `~arm64`) | None |
 | `app-misc/chatgpt-bin` | ChatGPT desktop application | `26.803.81509-r1` (`~amd64`, `~arm64`) | None |
+| `net-misc/dropbox` | Dropbox desktop syncing client | `264.4.3421` (`~amd64`) | `X` — install desktop icons and AppIndicator integration<br>`selinux` — install the Dropbox SELinux policy |
+| `net-misc/dropbox-cli` | Dropbox command-line interface | `2026.05.06` (`~amd64`) | None |
+| `kde-apps/dolphin-plugins-dropbox` | Dropbox status and context actions in Dolphin | `26.04.3` (`~amd64`) | None |
 | `net-misc/nextcloud-client` | Nextcloud desktop sync client | `34.0.1` (`~amd64`, `~arm64`) | `dolphin` — build the Dolphin extension<br>`nautilus` — build the Nautilus extension<br>`test` — build and run the test suite<br>`webengine` — enable the legacy Flow1 login |
 | `www-client/helium-bin` | Chromium-based Helium browser | `0.15.4.1` (`~amd64`, `~arm64`) | `qt6` — enable the bundled Qt 6 theme integration shim<br>`selinux` — install the Chromium SELinux policy |
 | `acct-group/onepassword` | System group required by the 1Password desktop client | `0` (installed automatically) | None |
@@ -42,7 +45,10 @@ emerge --ask app-misc/chatgpt-bin
 app-admin/1password-bin all-rights-reserved
 app-admin/op-cli-bin all-rights-reserved
 app-misc/chatgpt-bin all-rights-reserved
+net-misc/dropbox dropbox
 ```
+
+Install `kde-apps/dolphin-plugins-dropbox` to pull in the Dropbox client and CLI together with Dolphin integration. The CLI is available as both `dropbox-cli` and the upstream-compatible `dropbox` command.
 
 ## Maintenance
 
@@ -85,9 +91,10 @@ Keep an older stable ebuild until its replacement is stable on every architectur
 - `app-admin/1password-bin` is based on [jaredallard/overlay](https://github.com/jaredallard/overlay).
 - `app-admin/op-cli-bin` follows [Gentoo's historical ebuild](https://github.com/gentoo/gentoo/blob/master/app-admin/op-cli-bin/op-cli-bin-2.23.0.ebuild) and uses 1Password's official release artifacts.
 - `app-misc/chatgpt-bin` and `www-client/helium-bin` use their upstream architecture-specific Linux packages.
+- `net-misc/dropbox` follows Gentoo's official binary-daemon packaging while using Dropbox's stable Linux download redirect for update discovery. `net-misc/dropbox-cli` is generated from Dropbox's versioned nautilus-dropbox source release, and `kde-apps/dolphin-plugins-dropbox` follows Gentoo's split KDE Gear package.
 
-This is an unofficial community overlay and is not affiliated with or endorsed by OpenAI, Helium, Nextcloud, 1Password, or the Gentoo project.
+This is an unofficial community overlay and is not affiliated with or endorsed by OpenAI, Dropbox, Helium, Nextcloud, 1Password, KDE, or the Gentoo project.
 
 ## License
 
-The overlay's own files are licensed under the [GNU General Public License v2.0](LICENSE). This does not change the upstream licenses of packaged software; ChatGPT and 1Password remain proprietary software.
+The overlay's own files are licensed under the [GNU General Public License v2.0](LICENSE). This does not change the upstream licenses of packaged software; ChatGPT, Dropbox, and 1Password remain proprietary software.

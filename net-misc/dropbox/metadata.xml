@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<longdescription>
+		The official proprietary Dropbox desktop client for synchronizing files
+		with the Dropbox service. Dropbox supports Linux on amd64 only.
+	</longdescription>
+	<upstream>
+		<changelog>https://www.dropboxforum.com/category/English/discussions/101003016</changelog>
+		<bugs-to>https://www.dropbox.com/support</bugs-to>
+	</upstream>
+</pkgmetadata>

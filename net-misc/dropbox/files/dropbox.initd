@@ -1,0 +1,79 @@
+#!/sbin/openrc-run
+# Copyright 1999-2026 Gentoo Authors
+# Distributed under the terms of the GNU General Public License v2
+
+depend() {
+	need localmount net
+	after bootmisc
+}
+
+start() {
+	local tmpnice="${NICE:+--nicelevel ${NICE}}"
+	local tmpionice="${IONICE:+--ionice ${IONICE}}"
+	local started=""
+
+	ebegin "Starting Dropbox"
+	for dbuser in ${DROPBOX_USERS}; do
+		local homedir
+		homedir=$(getent passwd "${dbuser}" | cut -d: -f6)
+		if test -n "${homedir}" -a -d "${homedir}" && \
+			start-stop-daemon --start --background \
+			${tmpnice} ${tmpionice} \
+			--user "${dbuser}" --verbose \
+			--env HOME="${homedir}" \
+			--chdir "${homedir}" \
+			--exec /opt/dropbox/dropboxd; then
+			started="${started} ${dbuser}"
+		else
+			eend $?
+			eerror "Failed to start Dropbox for ${dbuser}"
+			if test -n "${started}"; then
+				eerror "Stopping already-started Dropbox instances"
+				DROPBOX_USERS=${started} stop
+			fi
+			return 1
+		fi
+	done
+
+	if test -z "${started}"; then
+		eerror "No users are configured in /etc/conf.d/dropbox"
+		eend 1
+	else
+		eend 0
+	fi
+}
+
+stop() {
+	local retval=0
+
+	ebegin "Stopping Dropbox"
+	for dbuser in ${DROPBOX_USERS}; do
+		local homedir
+		homedir=$(getent passwd "${dbuser}" | cut -d: -f6)
+		if test -z "${homedir}"; then
+			eerror "Could not find the home directory for ${dbuser}"
+			retval=1
+			continue
+		fi
+		start-stop-daemon --stop \
+			--pidfile "${homedir}/.dropbox/dropbox.pid" || retval=$?
+	done
+	eend ${retval}
+}
+
+status() {
+	local retval=0
+
+	for dbuser in ${DROPBOX_USERS}; do
+		local homedir
+		homedir=$(getent passwd "${dbuser}" | cut -d: -f6)
+		if test -n "${homedir}" -a -s "${homedir}/.dropbox/dropbox.pid" && \
+			kill -0 "$(cat "${homedir}/.dropbox/dropbox.pid")" 2>/dev/null; then
+			einfo "Dropbox for ${dbuser}: running"
+		else
+			eerror "Dropbox for ${dbuser}: stopped"
+			retval=1
+		fi
+	done
+	return ${retval}
+}
