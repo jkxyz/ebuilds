@@ -148,7 +148,7 @@ git diff --check
 git diff
 ```
 
-`scripts/bump_packages.py` creates a testing-keyworded ebuild from the newest existing version. The tools used by CI are defined in `.github/gentoo-tools/Containerfile` when a matching local environment is needed.
+`scripts/bump_packages.py` creates a testing-keyworded ebuild from the newest existing version. The tools used by CI are defined in `tools/Containerfile` when a matching local environment is needed.
 
 When adding, bumping, stabilizing, or removing an ebuild, regenerate the package catalogue. The automated update workflow does this after every successful package bump.
 

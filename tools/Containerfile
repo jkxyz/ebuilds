@@ -7,7 +7,7 @@ FROM docker.io/gentoo/stage3:latest@sha256:08914e15d306bfdb251262ca3f7e3489b77ca
 LABEL org.opencontainers.image.source="https://github.com/jkxyz/ebuilds"
 
 COPY --from=portage /var/db/repos/gentoo /var/db/repos/gentoo
-COPY .github/gentoo-tools/gentoo.conf /etc/portage/repos.conf
+COPY tools/gentoo.conf /etc/portage/repos.conf
 
 RUN USE="text" emerge --getbinpkg --jobs=2 --oneshot \
         app-portage/gentoolkit \

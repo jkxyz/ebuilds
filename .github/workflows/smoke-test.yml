@@ -83,10 +83,10 @@ jobs:
         with:
           path: /var/cache/binpkgs
           key: >-
-            gentoo-binpkgs-v1-${{ runner.arch }}-${{ hashFiles('.github/gentoo-tools/Containerfile', '.github/gentoo-tools/gentoo.conf') }}-${{ matrix.slug }}-${{ matrix.version }}
+            gentoo-binpkgs-v1-${{ runner.arch }}-${{ hashFiles('tools/Containerfile', 'tools/gentoo.conf') }}-${{ matrix.slug }}-${{ matrix.version }}
           restore-keys: |
-            gentoo-binpkgs-v1-${{ runner.arch }}-${{ hashFiles('.github/gentoo-tools/Containerfile', '.github/gentoo-tools/gentoo.conf') }}-${{ matrix.slug }}-
-            gentoo-binpkgs-v1-${{ runner.arch }}-${{ hashFiles('.github/gentoo-tools/Containerfile', '.github/gentoo-tools/gentoo.conf') }}-
+            gentoo-binpkgs-v1-${{ runner.arch }}-${{ hashFiles('tools/Containerfile', 'tools/gentoo.conf') }}-${{ matrix.slug }}-
+            gentoo-binpkgs-v1-${{ runner.arch }}-${{ hashFiles('tools/Containerfile', 'tools/gentoo.conf') }}-
 
       - name: Configure the test overlay
         env:
