@@ -41,7 +41,7 @@ The official 1Password command-line client for Linux.
 
 ChatGPT is OpenAI's desktop application for Chat, Work, and Codex. It can work with local projects, files, and development tools.
 
-**Versions:** `26.810.50856` (`~amd64`, `~arm64`)
+**Versions:** `26.814.41407` (`~amd64`, `~arm64`)
 
 **USE flags:** none
 
@@ -89,7 +89,7 @@ Desktop Syncing Client for Nextcloud
 
 Helium is a privacy-focused Chromium-based web browser with integrated content blocking and a minimal user interface.
 
-**Versions:** `0.15.4.1` (`~amd64`, `~arm64`)
+**Versions:** `0.15.5.1` (`~amd64`, `~arm64`)
 
 **USE flags**
 
