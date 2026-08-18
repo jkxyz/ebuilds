@@ -28,6 +28,9 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Test maintenance scripts and generated documentation
+        run: python -m unittest discover -s tests -v
+
       - name: Discover package updates
         id: packages
         run: echo "result=$(python scripts/updates_matrix.py)" >> "$GITHUB_OUTPUT"
@@ -41,6 +44,7 @@ jobs:
     timeout-minutes: 45
     strategy:
       fail-fast: false
+      max-parallel: 2
       matrix: ${{ fromJSON(needs.discover.outputs.result).matrix }}
     defaults:
       run:
@@ -77,6 +81,10 @@ jobs:
           EBUILD: ${{ steps.release.outputs.ebuild }}
         run: pkgcheck scan --exit GentooCI --cache-dir /tmp/pkgcheck "${ATOM}/${EBUILD}"
 
+      - name: Update README package catalogue
+        if: steps.release.outputs.updated == 'true'
+        run: python scripts/update_readme.py
+
       - name: Open update pull request
         if: steps.release.outputs.updated == 'true'
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
@@ -89,6 +97,7 @@ jobs:
           draft: false
           add-paths: |
             ${{ matrix.atom }}
+            README.md
           commit-message: >-
             ${{ matrix.atom }}: bump to ${{ steps.release.outputs.version }}
           title: >-
@@ -96,4 +105,4 @@ jobs:
           body: |
             Updates `${{ matrix.atom }}` from `${{ steps.release.outputs.previous_version }}` to `${{ steps.release.outputs.version }}`.
 
-            The package's stable version probe reported this release. `pkgbump` created the testing ebuild and regenerated its Manifest; `pkgcheck` completed the GentooCI scan.
+            The package's stable version probe reported this release. `pkgbump` created the testing ebuild and regenerated its Manifest, the README catalogue was refreshed, and `pkgcheck` completed the GentooCI scan.

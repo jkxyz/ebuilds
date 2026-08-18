@@ -1,0 +1,127 @@
+name: Smoke test updated packages
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "*/*/*.ebuild"
+      - "*/*/Manifest"
+      - "*/*/files/**"
+  workflow_dispatch:
+
+concurrency:
+  group: smoke-test-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  discover:
+    name: Discover updated packages
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    outputs:
+      result: ${{ steps.packages.outputs.result }}
+    steps:
+      - name: Check out repository history
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Verify generated package catalogue
+        run: python scripts/update_readme.py --check
+
+      - name: Discover packages to test
+        id: packages
+        env:
+          AFTER: ${{ github.sha }}
+          BEFORE: ${{ github.event.before }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          if [[ ${EVENT_NAME} == workflow_dispatch ]]; then
+            result=$(python scripts/smoke_matrix.py --all)
+          else
+            result=$(python scripts/smoke_matrix.py "${BEFORE}" "${AFTER}")
+          fi
+          echo "result=${result}" >> "${GITHUB_OUTPUT}"
+
+  smoke:
+    name: ${{ matrix.atom }}-${{ matrix.version }}
+    needs: discover
+    if: fromJSON(needs.discover.outputs.result).has_packages
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix: ${{ fromJSON(needs.discover.outputs.result).matrix }}
+    permissions:
+      contents: read
+      packages: read
+    container:
+      image: ghcr.io/jkxyz/ebuilds-gentoo-tools:latest
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ github.token }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Prepare Portage cache
+        run: install -d /var/cache/binpkgs
+
+      - name: Restore downloaded Gentoo binary packages
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        env:
+          SEGMENT_DOWNLOAD_TIMEOUT_MINS: 5
+        with:
+          path: /var/cache/binpkgs
+          key: >-
+            gentoo-binpkgs-v1-${{ runner.arch }}-${{ hashFiles('.github/gentoo-tools/Containerfile', '.github/gentoo-tools/gentoo.conf') }}-${{ matrix.slug }}-${{ matrix.version }}
+          restore-keys: |
+            gentoo-binpkgs-v1-${{ runner.arch }}-${{ hashFiles('.github/gentoo-tools/Containerfile', '.github/gentoo-tools/gentoo.conf') }}-${{ matrix.slug }}-
+            gentoo-binpkgs-v1-${{ runner.arch }}-${{ hashFiles('.github/gentoo-tools/Containerfile', '.github/gentoo-tools/gentoo.conf') }}-
+
+      - name: Configure the test overlay
+        env:
+          ATOM: ${{ matrix.atom }}
+          PACKAGE_USE: ${{ matrix.use }}
+        run: |
+          printf '\n[jkxyz-ebuilds]\nlocation = %s\nmasters = gentoo\nauto-sync = no\n' \
+            "${GITHUB_WORKSPACE}" >> /etc/portage/repos.conf
+          install -d \
+            /etc/portage/package.accept_keywords \
+            /etc/portage/package.license \
+            /etc/portage/package.use
+          printf '*/* ~amd64\n' > /etc/portage/package.accept_keywords/jkxyz-smoke
+          printf '*/* *\n' > /etc/portage/package.license/jkxyz-smoke
+          printf '%s %s\n' "${ATOM}" "${PACKAGE_USE}" > /etc/portage/package.use/jkxyz-smoke
+
+      - name: Run package QA
+        env:
+          ATOM: ${{ matrix.atom }}
+          VERSION: ${{ matrix.version }}
+        run: >-
+          pkgcheck scan --exit GentooCI --cache-dir /tmp/pkgcheck
+          "${ATOM}/${ATOM#*/}-${VERSION}.ebuild"
+
+      - name: Build and install package
+        env:
+          ATOM: ${{ matrix.atom }}
+          GENTOO_MIRRORS: ""
+          MAKEOPTS: "-j2"
+          VERSION: ${{ matrix.version }}
+        run: >-
+          emerge --getbinpkg --jobs=2 --load-average=2
+          --usepkg-exclude "${ATOM}" --oneshot --verbose
+          "=${ATOM}-${VERSION}::jkxyz-ebuilds"
+
+      - name: Print Portage failure logs
+        if: failure()
+        run: find /var/tmp/portage -path '*/temp/build.log' -type f -print -exec tail -n 500 '{}' ';'
