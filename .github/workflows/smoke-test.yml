@@ -95,7 +95,12 @@ jobs:
         env:
           ATOM: ${{ matrix.atom }}
           PACKAGE_USE: ${{ matrix.use }}
+          PROFILE: ${{ matrix.profile }}
         run: |
+          if [ -n "${PROFILE}" ]; then
+            eselect profile set "${PROFILE}"
+          fi
+          eselect profile show
           printf '\n[jkxyz-ebuilds]\nlocation = %s\nmasters = gentoo\nauto-sync = no\n' \
             "${GITHUB_WORKSPACE}" >> /etc/portage/repos.conf
           install -d \

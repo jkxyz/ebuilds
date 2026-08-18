@@ -55,17 +55,33 @@ class SmokeMatrixTests(unittest.TestCase):
                 [
                     {
                         "atom": "app-test/another",
+                        "profile": "",
                         "slug": "app-test-another",
                         "use": "",
                         "version": "2.0",
                     },
                     {
                         "atom": "net-misc/dropbox",
+                        "profile": "",
                         "slug": "net-misc-dropbox",
                         "use": "X -selinux",
                         "version": "1.2",
                     },
                 ],
+            )
+
+    def test_matrix_selects_a_plasma_profile_for_the_dolphin_plugin(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            make_ebuild(root, "kde-apps/dolphin-plugins-dropbox", "1.0")
+
+            result = smoke_matrix.matrix(
+                ["kde-apps/dolphin-plugins-dropbox"], root
+            )
+
+            self.assertEqual(
+                result["matrix"]["include"][0]["profile"],
+                "default/linux/amd64/23.0/desktop/plasma",
             )
 
     def test_zero_before_revision_selects_all_ebuild_paths(self):

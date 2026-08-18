@@ -25,6 +25,11 @@ SMOKE_USE = {
     "net-misc/nextcloud-client": "-dolphin -nautilus -test -webengine",
     "www-client/helium-bin": "qt6 -selinux",
 }
+SMOKE_PROFILE = {
+    "kde-apps/dolphin-plugins-dropbox": (
+        "default/linux/amd64/23.0/desktop/plasma"
+    ),
+}
 
 
 def is_package_change(parts: tuple[str, ...]) -> bool:
@@ -81,9 +86,11 @@ def matrix(atoms: Iterable[str], root: Path = REPOSITORY_ROOT) -> dict[str, obje
     include: list[dict[str, str]] = []
     for atom in sorted(set(atoms)):
         release = highest(non_live_ebuilds(ebuilds(atom, root)))
+        profile = SMOKE_PROFILE.get(atom, "")
         include.append(
             {
                 "atom": atom,
+                "profile": profile,
                 "slug": atom.replace("/", "-"),
                 "use": SMOKE_USE.get(atom, ""),
                 "version": release.version,
