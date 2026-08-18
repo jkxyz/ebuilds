@@ -119,6 +119,9 @@ jobs:
           VERSION: ${{ matrix.version }}
         run: >-
           emerge --getbinpkg --jobs=2 --load-average=2
+          --autounmask-continue=y --autounmask-use=y
+          --autounmask-keep-keywords=y --autounmask-keep-masks=y
+          --autounmask-license=n
           --usepkg-exclude "${ATOM}" --oneshot --verbose
           "=${ATOM}-${VERSION}::jkxyz-ebuilds"
 
