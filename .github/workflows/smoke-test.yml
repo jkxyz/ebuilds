@@ -73,20 +73,23 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Prepare Portage cache
-        run: install -d /var/cache/binpkgs
+      - name: Prepare Portage caches
+        run: install -d /var/cache/binhost /var/cache/binpkgs /var/cache/distfiles
 
       - name: Restore downloaded Gentoo binary packages
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         env:
           SEGMENT_DOWNLOAD_TIMEOUT_MINS: 5
         with:
-          path: /var/cache/binpkgs
+          path: |
+            /var/cache/binhost
+            /var/cache/binpkgs
+            /var/cache/distfiles
           key: >-
-            gentoo-binpkgs-v1-${{ runner.arch }}-${{ hashFiles('tools/Containerfile', 'tools/gentoo.conf') }}-${{ matrix.slug }}-${{ matrix.version }}
+            gentoo-binpkgs-v2-${{ runner.arch }}-${{ hashFiles('tools/Containerfile', 'tools/gentoo.conf', '.github/workflows/smoke-test.yml') }}-${{ matrix.slug }}-${{ matrix.version }}
           restore-keys: |
-            gentoo-binpkgs-v1-${{ runner.arch }}-${{ hashFiles('tools/Containerfile', 'tools/gentoo.conf') }}-${{ matrix.slug }}-
-            gentoo-binpkgs-v1-${{ runner.arch }}-${{ hashFiles('tools/Containerfile', 'tools/gentoo.conf') }}-
+            gentoo-binpkgs-v2-${{ runner.arch }}-${{ hashFiles('tools/Containerfile', 'tools/gentoo.conf', '.github/workflows/smoke-test.yml') }}-${{ matrix.slug }}-
+            gentoo-binpkgs-v2-${{ runner.arch }}-${{ hashFiles('tools/Containerfile', 'tools/gentoo.conf', '.github/workflows/smoke-test.yml') }}-
 
       - name: Configure the test overlay
         env:
@@ -99,7 +102,7 @@ jobs:
             /etc/portage/package.accept_keywords \
             /etc/portage/package.license \
             /etc/portage/package.use
-          printf '*/* ~amd64\n' > /etc/portage/package.accept_keywords/jkxyz-smoke
+          printf '%s ~amd64\n' "${ATOM}" > /etc/portage/package.accept_keywords/jkxyz-smoke
           printf '*/* *\n' > /etc/portage/package.license/jkxyz-smoke
           printf '%s %s\n' "${ATOM}" "${PACKAGE_USE}" > /etc/portage/package.use/jkxyz-smoke
 
@@ -118,7 +121,9 @@ jobs:
           MAKEOPTS: "-j2"
           VERSION: ${{ matrix.version }}
         run: >-
-          emerge --getbinpkg --jobs=2 --load-average=2
+          emerge --getbinpkg --binpkg-respect-use=n
+          --buildpkg=y --buildpkg-exclude "${ATOM}"
+          --jobs=2 --load-average=2
           --autounmask-continue=y --autounmask-use=y
           --autounmask-keep-keywords=y --autounmask-keep-masks=y
           --autounmask-license=n
