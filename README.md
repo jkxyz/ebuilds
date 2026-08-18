@@ -134,8 +134,6 @@ Install `kde-apps/dolphin-plugins-dropbox` to pull in the Dropbox client and CLI
 
 The `Update packages` workflow checks tracked packages daily and opens a pull request when it finds a new stable upstream release. A package opts into these checks by providing an executable `CATEGORY/PACKAGE/latest_version.py` probe that prints the latest stable Portage version. Discovery and version comparison run directly on the Ubuntu runner; the Gentoo tools container starts only when an ebuild needs an update.
 
-After build-relevant package changes reach `main`, the `Smoke test updated packages` workflow builds the newest affected ebuilds on amd64. Each package runs as a separately named matrix job. Downloaded Gentoo binary dependencies are cached per package and tools-image revision, while the overlay package itself is always rebuilt from its ebuild. A manual workflow run tests every package.
-
 For a manual update, run the package's probe, bump the ebuild, regenerate its Manifest, run the Gentoo CI checks, and inspect the complete diff:
 
 ```bash
