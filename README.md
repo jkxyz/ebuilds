@@ -57,7 +57,7 @@ The Dropbox version-control plugin from KDE's Dolphin Plugins release. It adds D
 
 The official proprietary Dropbox desktop client for synchronizing files with the Dropbox service. Dropbox supports Linux on amd64 only.
 
-**Versions:** `264.4.3421` (`~amd64`)
+**Versions:** `266.4.3911` (`~amd64`)
 
 **USE flags**
 
