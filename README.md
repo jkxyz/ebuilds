@@ -41,7 +41,7 @@ The official 1Password command-line client for Linux.
 
 ChatGPT is OpenAI's desktop application for Chat, Work, and Codex. It can work with local projects, files, and development tools.
 
-**Versions:** `26.814.41957` (`~amd64`, `~arm64`)
+**Versions:** `26.818.21641` (`~amd64`, `~arm64`)
 
 **USE flags:** none
 
