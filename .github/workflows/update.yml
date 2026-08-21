@@ -35,58 +35,124 @@ jobs:
         id: packages
         run: echo "result=$(python scripts/updates_matrix.py)" >> "$GITHUB_OUTPUT"
 
-  update:
+  prepare:
     needs: discover
     if: >-
       needs.discover.result == 'success' &&
       fromJSON(needs.discover.outputs.result).has_updates
     runs-on: ubuntu-24.04
     timeout-minutes: 45
-    strategy:
-      fail-fast: false
-      max-parallel: 2
-      matrix: ${{ fromJSON(needs.discover.outputs.result).matrix }}
     defaults:
       run:
         shell: bash
     permissions:
-      contents: write
+      contents: read
       packages: read
-      pull-requests: write
-    container:
-      image: ghcr.io/jkxyz/ebuilds-gentoo-tools:latest
-      credentials:
-        username: ${{ github.actor }}
-        password: ${{ github.token }}
+    outputs:
+      result: ${{ steps.packages.outputs.result }}
     steps:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
-      - name: Configure Git safe directory
-        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
 
-      - name: Bump package and regenerate Manifest
-        id: release
+      - name: Refresh the verified Gentoo repository once
         env:
-          ATOM: ${{ matrix.atom }}
-          VERSION: ${{ matrix.version }}
-        run: scripts/bump_packages.py "$ATOM" "$VERSION" >> "$GITHUB_OUTPUT"
+          PORTAGE_IMAGE: docker.io/gentoo/portage:latest
+          TOOLS_IMAGE: ghcr.io/jkxyz/ebuilds-gentoo-tools:latest
+        run: |
+          docker pull "$TOOLS_IMAGE"
+          docker pull "$PORTAGE_IMAGE"
+          docker create --name gentoo-repository "$PORTAGE_IMAGE" /bin/true
+          docker run --rm \
+            --volumes-from gentoo-repository \
+            "$TOOLS_IMAGE" \
+            emaint sync -r gentoo
+          repository_digest=$(docker image inspect \
+            --format '{{index .RepoDigests 0}}' "$PORTAGE_IMAGE")
+          echo "Gentoo repository base: \`$repository_digest\`" >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Run package QA on the generated ebuild
-        if: steps.release.outputs.updated == 'true'
+      - name: Prepare package updates against the refreshed repository
+        id: packages
         env:
-          ATOM: ${{ matrix.atom }}
-          EBUILD: ${{ steps.release.outputs.ebuild }}
-        run: pkgcheck scan --exit GentooCI --cache-dir /tmp/pkgcheck "${ATOM}/${EBUILD}"
+          UPDATES_JSON: ${{ needs.discover.outputs.result }}
+        run: |
+          result=$(python scripts/prepare_updates.py \
+            --updates-json "$UPDATES_JSON" \
+            --output "$RUNNER_TEMP/prepared" \
+            --tools-image ghcr.io/jkxyz/ebuilds-gentoo-tools:latest \
+            --repository-container gentoo-repository)
+          echo "result=$result" >> "$GITHUB_OUTPUT"
 
-      - name: Update README package catalogue
-        if: steps.release.outputs.updated == 'true'
-        run: python scripts/update_readme.py
+      - name: Upload prepared patches
+        if: fromJSON(steps.packages.outputs.result).has_prepared
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: prepared-updates
+          path: ${{ runner.temp }}/prepared/*.patch
+          if-no-files-found: error
+          retention-days: 1
+
+  report-preparation-failures:
+    needs: prepare
+    if: >-
+      needs.prepare.result == 'success' &&
+      fromJSON(needs.prepare.outputs.result).has_failures
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions: {}
+    steps:
+      - name: Report failed package preparations
+        env:
+          FAILURES_JSON: ${{ toJSON(fromJSON(needs.prepare.outputs.result).failures) }}
+        run: |
+          python -c 'import json, os; [print("::error title={}::{}".format(item["atom"], item["message"])) for item in json.loads(os.environ["FAILURES_JSON"])]'
+          exit 1
+
+  update:
+    needs:
+      - discover
+      - prepare
+    if: >-
+      needs.prepare.result == 'success' &&
+      fromJSON(needs.prepare.outputs.result).has_prepared
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix: ${{ fromJSON(needs.prepare.outputs.result).matrix }}
+    defaults:
+      run:
+        shell: bash
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Download prepared patches
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: prepared-updates
+          path: ${{ runner.temp }}/prepared
+
+      - name: Apply prepared package update
+        env:
+          PATCH: ${{ matrix.patch }}
+        run: git apply --whitespace=error-all "$RUNNER_TEMP/prepared/$PATCH"
 
       - name: Open update pull request
-        if: steps.release.outputs.updated == 'true'
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
         with:
           token: ${{ github.token }}
@@ -99,10 +165,10 @@ jobs:
             ${{ matrix.atom }}
             README.md
           commit-message: >-
-            ${{ matrix.atom }}: bump to ${{ steps.release.outputs.version }}
+            ${{ matrix.atom }}: bump to ${{ matrix.version }}
           title: >-
-            ${{ matrix.atom }}: bump to ${{ steps.release.outputs.version }}
+            ${{ matrix.atom }}: bump to ${{ matrix.version }}
           body: |
-            Updates `${{ matrix.atom }}` from `${{ steps.release.outputs.previous_version }}` to `${{ steps.release.outputs.version }}`.
+            Updates `${{ matrix.atom }}` from `${{ matrix.previous_version }}` to `${{ matrix.version }}`.
 
-            The package's stable version probe reported this release. `pkgbump` created the testing ebuild and regenerated its Manifest, the README catalogue was refreshed, and `pkgcheck` completed the GentooCI scan.
+            The package's stable version probe reported this release. `pkgbump` created the testing ebuild and regenerated its Manifest, the README catalogue was refreshed, and `pkgcheck` completed the GentooCI scan against the repository refreshed once for this update run.

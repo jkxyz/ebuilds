@@ -1,16 +1,17 @@
 # syntax=docker/dockerfile:1
 
-# The moving tag is intentional so scheduled and manual builds refresh pkgcheck's package metadata.
-FROM docker.io/gentoo/portage:latest AS portage
+# Repository metadata is mounted only while installing tools; update runs supply a fresh rsync volume.
+# The pinned stage3 already includes Portage's verified-rsync runtime and Gentoo release keys.
+FROM docker.io/gentoo/portage:latest@sha256:c5b4aa221cc3a65e331407022d5e515363ae0166bb0918e02809cc8e22441dd9 AS portage
 
 FROM docker.io/gentoo/stage3:latest@sha256:08914e15d306bfdb251262ca3f7e3489b77ca32604ad1928cbb21dc94587261c
 
 LABEL org.opencontainers.image.source="https://github.com/jkxyz/ebuilds"
 
-COPY --from=portage /var/db/repos/gentoo /var/db/repos/gentoo
 COPY tools/gentoo.conf /etc/portage/repos.conf
 
-RUN USE="text" emerge --getbinpkg --jobs=2 --oneshot \
+RUN --mount=type=bind,from=portage,source=/var/db/repos/gentoo,target=/var/db/repos/gentoo \
+    USE="text" emerge --getbinpkg --jobs=2 --oneshot \
         app-portage/gentoolkit \
         app-portage/mgorny-dev-scripts \
         dev-util/pkgcheck \
