@@ -1,6 +1,8 @@
 name: Publish Gentoo Tools
 
 on:
+  schedule:
+    - cron: "17 3 * * *"
   push:
     branches:
       - main
@@ -47,6 +49,7 @@ jobs:
         with:
           context: .
           file: tools/Containerfile
+          pull: true
           push: true
           tags: |
             ghcr.io/jkxyz/ebuilds-gentoo-tools:latest

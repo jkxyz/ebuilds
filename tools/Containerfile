@@ -1,6 +1,7 @@
 # syntax=docker/dockerfile:1
 
-FROM docker.io/gentoo/portage:latest@sha256:c5b4aa221cc3a65e331407022d5e515363ae0166bb0918e02809cc8e22441dd9 AS portage
+# The moving tag is intentional so scheduled and manual builds refresh pkgcheck's package metadata.
+FROM docker.io/gentoo/portage:latest AS portage
 
 FROM docker.io/gentoo/stage3:latest@sha256:08914e15d306bfdb251262ca3f7e3489b77ca32604ad1928cbb21dc94587261c
 
