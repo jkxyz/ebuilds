@@ -49,7 +49,7 @@ ChatGPT is OpenAI's desktop application for Chat, Work, and Codex. It can work w
 
 The Dropbox version-control plugin from KDE's Dolphin Plugins release. It adds Dropbox file status overlays and context actions to Dolphin.
 
-**Versions:** `26.04.3` (`~amd64`)
+**Versions:** `26.08.0` (`~amd64`)
 
 **USE flags:** none
 
