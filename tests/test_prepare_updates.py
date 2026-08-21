@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import tempfile
 import unittest
@@ -120,6 +121,9 @@ class PrepareUpdatesTests(unittest.TestCase):
         self.assertIn("gentoo-repository:ro", docker)
         self.assertIn("ATOM=app-test/fixture-bin", docker)
         self.assertIn("VERSION=2.0.0", docker)
+        self.assertIn(f"HOST_UID={os.getuid()}", docker)
+        self.assertIn(f"HOST_GID={os.getgid()}", docker)
+        self.assertIn("trap cleanup EXIT", prepare_updates.CONTAINER_SCRIPT)
 
     def test_prepare_retains_success_when_another_package_fails(self):
         def runner(command, **kwargs):

@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import shlex
 import subprocess
 import sys
@@ -22,6 +23,13 @@ except ImportError:  # pragma: no cover - used when run as a script
 REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 Runner = Callable[..., subprocess.CompletedProcess[str]]
 CONTAINER_SCRIPT = """\
+cleanup() {
+    local status=$?
+    chown -R -- "${HOST_UID}:${HOST_GID}" /work /prepared || true
+    exit "$status"
+}
+trap cleanup EXIT
+
 git config --global --add safe.directory /work
 scripts/bump_packages.py "$ATOM" "$VERSION" > /prepared/release
 updated=$(sed -n 's/^updated=//p' /prepared/release)
@@ -157,6 +165,10 @@ def run_update(
                 f"ATOM={update.atom}",
                 "--env",
                 f"VERSION={update.version}",
+                "--env",
+                f"HOST_UID={os.getuid()}",
+                "--env",
+                f"HOST_GID={os.getgid()}",
                 tools_image,
                 "bash",
                 "-euo",
