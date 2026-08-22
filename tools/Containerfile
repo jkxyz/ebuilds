@@ -4,7 +4,7 @@
 # The pinned stage3 already includes Portage's verified-rsync runtime and Gentoo release keys.
 FROM docker.io/gentoo/portage:latest@sha256:c5b4aa221cc3a65e331407022d5e515363ae0166bb0918e02809cc8e22441dd9 AS portage
 
-FROM docker.io/gentoo/stage3:latest@sha256:08914e15d306bfdb251262ca3f7e3489b77ca32604ad1928cbb21dc94587261c
+FROM docker.io/gentoo/stage3:latest@sha256:5dd166736e74109e3f4443f5414bc5abf673d821240548b3794a24b29945c4bc
 
 LABEL org.opencontainers.image.source="https://github.com/jkxyz/ebuilds"
 
