@@ -22,7 +22,7 @@ Group for the 1Password password manager
 
 The official 1Password desktop password manager for Linux.
 
-**Versions:** `8.12.28` (`amd64`, `arm64`); `8.12.32` (`~amd64`, `~arm64`)
+**Versions:** `8.12.28` (`amd64`, `arm64`); `8.12.34` (`~amd64`, `~arm64`)
 
 **USE flags**
 
