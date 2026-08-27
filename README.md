@@ -76,7 +76,7 @@ The GPL-licensed command-line frontend from nautilus-dropbox, configured to cont
 
 Desktop Syncing Client for Nextcloud
 
-**Versions:** `34.0.2` (`~amd64`, `~arm64`)
+**Versions:** `34.0.3` (`~amd64`, `~arm64`)
 
 **USE flags**
 
