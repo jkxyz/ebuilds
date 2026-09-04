@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<longdescription>
+		Filen is an end-to-end encrypted cloud storage desktop client. It can
+		synchronize local folders, browse cloud files, mount a virtual drive, and
+		host local WebDAV and S3-compatible endpoints.
+	</longdescription>
+	<upstream>
+		<changelog>https://github.com/FilenCloudDienste/filen-desktop/releases</changelog>
+		<bugs-to>https://github.com/FilenCloudDienste/filen-desktop/issues</bugs-to>
+		<doc>https://docs.filen.io/docs/desktop/</doc>
+		<remote-id type="github">FilenCloudDienste/filen-desktop</remote-id>
+	</upstream>
+</pkgmetadata>

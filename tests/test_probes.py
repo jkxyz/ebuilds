@@ -218,7 +218,9 @@ class HeliumProbeTests(unittest.TestCase):
         self.assertEqual(self.probe.parse_release(self.release()), "0.15.3.1")
 
     def test_rejects_prereleases_and_incomplete_assets(self):
-        prerelease = self.release().replace('"prerelease": false', '"prerelease": true')
+        prerelease = self.release().replace(
+            '"prerelease": false', '"prerelease": true'
+        )
         with self.assertRaises(RuntimeError):
             self.probe.parse_release(prerelease)
 
@@ -239,6 +241,54 @@ class HeliumProbeTests(unittest.TestCase):
             result = self.probe.main([])
         self.assertEqual(result, 0)
         self.assertEqual(stdout.getvalue(), "0.15.3.1\n")
+        self.assertEqual(stderr.getvalue(), "")
+
+
+class FilenDesktopProbeTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.probe = load_probe(
+            "net-misc/filen-desktop-bin/latest_version.py",
+            "filen_desktop_latest_version",
+        )
+
+    @staticmethod
+    def release(version: str = "3.0.53") -> str:
+        return f"""{{
+            "tag_name": "v{version}",
+            "draft": false,
+            "prerelease": false,
+            "assets": [
+                {{"name": "Filen_linux_amd64.deb"}},
+                {{"name": "Filen_linux_arm64.deb"}}
+            ]
+        }}"""
+
+    def test_parses_stable_release_with_both_packages(self):
+        self.assertEqual(self.probe.parse_release(self.release()), "3.0.53")
+
+    def test_rejects_prereleases_and_incomplete_assets(self):
+        prerelease = self.release().replace('"prerelease": false', '"prerelease": true')
+        with self.assertRaises(RuntimeError):
+            self.probe.parse_release(prerelease)
+
+        release = json.loads(self.release())
+        release["assets"].pop()
+        with self.assertRaisesRegex(RuntimeError, "arm64.deb"):
+            self.probe.parse_release(json.dumps(release))
+
+    def test_rejects_malformed_version(self):
+        with self.assertRaisesRegex(RuntimeError, "unsupported stable Filen version"):
+            self.probe.parse_release(self.release("latest"))
+
+    def test_main_prints_only_the_version(self):
+        self.probe.latest_stable_version = lambda: "3.0.53"
+        stdout = StringIO()
+        stderr = StringIO()
+        with redirect_stdout(stdout), redirect_stderr(stderr):
+            result = self.probe.main([])
+        self.assertEqual(result, 0)
+        self.assertEqual(stdout.getvalue(), "3.0.53\n")
         self.assertEqual(stderr.getvalue(), "")
 
 

@@ -1,6 +1,6 @@
 # jkxyz/ebuilds
 
-A small [Gentoo](https://www.gentoo.org/) Portage overlay maintained by [jkxyz](https://github.com/jkxyz). It packages the 1Password, ChatGPT, Dropbox, and Nextcloud desktop clients, their related command-line or desktop integrations, and the Helium browser.
+A small [Gentoo](https://www.gentoo.org/) Portage overlay maintained by [jkxyz](https://github.com/jkxyz). It packages the 1Password, ChatGPT, Dropbox, Filen, and Nextcloud desktop clients, their related command-line or desktop integrations, and the Helium browser.
 
 ## Packages
 
@@ -69,6 +69,14 @@ The official proprietary Dropbox desktop client for synchronizing files with the
 The GPL-licensed command-line frontend from nautilus-dropbox, configured to control the system copy installed by net-misc/dropbox.
 
 **Versions:** `2026.05.06` (`~amd64`)
+
+**USE flags:** none
+
+### `net-misc/filen-desktop-bin`
+
+Filen is an end-to-end encrypted cloud storage desktop client. It can synchronize local folders, browse cloud files, mount a virtual drive, and host local WebDAV and S3-compatible endpoints.
+
+**Versions:** `3.0.53` (`~amd64`, `~arm64`)
 
 **USE flags:** none
 
@@ -173,9 +181,10 @@ Keep an older stable ebuild until its replacement is stable on every architectur
 - `app-admin/1password-bin` is based on [jaredallard/overlay](https://github.com/jaredallard/overlay).
 - `app-admin/op-cli-bin` follows [Gentoo's historical ebuild](https://github.com/gentoo/gentoo/blob/master/app-admin/op-cli-bin/op-cli-bin-2.23.0.ebuild) and uses 1Password's official release artifacts.
 - `app-misc/chatgpt-bin` and `www-client/helium-bin` use their upstream architecture-specific Linux packages.
+- `net-misc/filen-desktop-bin` uses Filen's upstream architecture-specific Debian packages.
 - `net-misc/dropbox` follows Gentoo's official binary-daemon packaging while using Dropbox's stable Linux download redirect for update discovery. `net-misc/dropbox-cli` is generated from Dropbox's versioned nautilus-dropbox source release, and `kde-apps/dolphin-plugins-dropbox` follows Gentoo's split KDE Gear package.
 
-This is an unofficial community overlay and is not affiliated with or endorsed by OpenAI, Dropbox, Helium, Nextcloud, 1Password, KDE, or the Gentoo project.
+This is an unofficial community overlay and is not affiliated with or endorsed by OpenAI, Dropbox, Filen, Helium, Nextcloud, 1Password, KDE, or the Gentoo project.
 
 ## License
 
