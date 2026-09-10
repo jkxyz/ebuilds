@@ -2,7 +2,7 @@
 
 # Repository metadata is mounted only while installing tools; update runs supply a fresh rsync volume.
 # The pinned stage3 already includes Portage's verified-rsync runtime and Gentoo release keys.
-FROM docker.io/gentoo/portage:latest@sha256:9c896aefb9a49fe6cbb785659b63dde710a0d6a64425a6680bc553dcd1662299 AS portage
+FROM docker.io/gentoo/portage:latest@sha256:08e4ecc48a2ed7637d94a73f3cd1f6279010cf2e55afdf2d6f6ce71715e2df44 AS portage
 
 FROM docker.io/gentoo/stage3:latest@sha256:6067704c9e8075416431b840c9c1bf0bb95cb8e0857e6857f5bb9d7df62f5422
 
