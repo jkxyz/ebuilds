@@ -67,7 +67,7 @@ EOF" >"${D}/usr/share/polkit-1/actions/com.1password.1Password.policy"
 	dosym -r /opt/1Password/${MY_PN} /usr/bin/${MY_PN}
 	dosym -r /opt/1Password/op-ssh-sign /usr/bin/op-ssh-sign
 
-	dosym -r /opt/1Password/resources/${MY_PN}.desktop "/usr/share/applications/${MY_PN}.desktop"
+	domenu "${D}/opt/1Password/resources/com.onepassword.OnePassword.desktop"
 	newicon "${D}/opt/1Password/resources/icons/hicolor/512x512/apps/${MY_PN}.png" "${MY_PN}.png"
 
 	dodoc "${D}/opt/1Password/resources/custom_allowed_browsers"
