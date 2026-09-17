@@ -84,7 +84,7 @@ Filen is an end-to-end encrypted cloud storage desktop client. It can synchroniz
 
 Desktop Syncing Client for Nextcloud
 
-**Versions:** `34.0.3` (`~amd64`, `~arm64`)
+**Versions:** `34.0.4` (`~amd64`, `~arm64`)
 
 **USE flags**
 
