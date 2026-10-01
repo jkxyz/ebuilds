@@ -68,7 +68,7 @@ The official proprietary Dropbox desktop client for synchronizing files with the
 
 The GPL-licensed command-line frontend from nautilus-dropbox, configured to control the system copy installed by net-misc/dropbox.
 
-**Versions:** `2026.05.06` (`~amd64`)
+**Versions:** `2026.09.28` (`~amd64`)
 
 **USE flags:** none
 
