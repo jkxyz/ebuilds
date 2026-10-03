@@ -33,7 +33,7 @@ The official 1Password desktop password manager for Linux.
 
 The official 1Password command-line client for Linux.
 
-**Versions:** `2.39.0` (`~amd64`, `~arm64`)
+**Versions:** `2.40.0` (`~amd64`, `~arm64`)
 
 **USE flags:** none
 
