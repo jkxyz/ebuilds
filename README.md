@@ -1,6 +1,6 @@
 # jkxyz/ebuilds
 
-A small [Gentoo](https://www.gentoo.org/) Portage overlay maintained by [jkxyz](https://github.com/jkxyz). It packages the 1Password, ChatGPT, Dropbox, Filen, and Nextcloud desktop clients, their related command-line or desktop integrations, and the Helium browser.
+A small [Gentoo](https://www.gentoo.org/) Portage overlay maintained by [jkxyz](https://github.com/jkxyz). It packages the 1Password, ChatGPT, Dropbox, Filen, and Nextcloud desktop clients, their related command-line or desktop integrations, the Helium browser, and the iA Writer Mono typeface.
 
 ## Packages
 
@@ -50,6 +50,14 @@ ChatGPT is OpenAI's desktop application for Chat, Work, and Codex. It can work w
 The Dropbox version-control plugin from KDE's Dolphin Plugins release. It adds Dropbox file status overlays and context actions to Dolphin.
 
 **Versions:** `26.08.1` (`~amd64`)
+
+**USE flags:** none
+
+### `media-fonts/ia-writer-mono`
+
+The static iA Writer Mono S family from Information Architects' iA Writer, a monospaced typeface based on IBM Plex Mono.
+
+**Versions:** `2.000` (`~amd64`, `~arm64`)
 
 **USE flags:** none
 
@@ -140,7 +148,7 @@ Install `kde-apps/dolphin-plugins-dropbox` to pull in the Dropbox client and CLI
 
 ## Maintenance
 
-The `Update packages` workflow checks tracked packages daily and opens a pull request when it finds a new stable upstream release. A package opts into these checks by providing an executable `CATEGORY/PACKAGE/latest_version.py` probe that prints the latest stable Portage version. Discovery and version comparison run directly on the Ubuntu runner; the Gentoo tools container starts only when an ebuild needs an update.
+The `Update packages` workflow checks tracked packages daily and opens a pull request when it finds a new stable upstream release. A package opts into these checks by providing an executable `CATEGORY/PACKAGE/latest_version.py` probe that prints the latest stable Portage version. `media-fonts/ia-writer-mono` has no probe because upstream publishes no releases; its ebuild pins a repository commit and is updated by hand. Discovery and version comparison run directly on the Ubuntu runner; the Gentoo tools container starts only when an ebuild needs an update.
 
 For a manual update, run the package's probe, bump the ebuild, regenerate its Manifest, run the Gentoo CI checks, and inspect the complete diff:
 
@@ -183,8 +191,9 @@ Keep an older stable ebuild until its replacement is stable on every architectur
 - `app-misc/chatgpt-bin` and `www-client/helium-bin` use their upstream architecture-specific Linux packages.
 - `net-misc/filen-desktop-bin` uses Filen's upstream architecture-specific Debian packages.
 - `net-misc/dropbox` follows Gentoo's official binary-daemon packaging while using Dropbox's stable Linux download redirect for update discovery. `net-misc/dropbox-cli` is generated from Dropbox's versioned nautilus-dropbox source release, and `kde-apps/dolphin-plugins-dropbox` follows Gentoo's split KDE Gear package.
+- `media-fonts/ia-writer-mono` installs the static fonts from a pinned commit of Information Architects' [iA-Fonts](https://github.com/iaolo/iA-Fonts) repository, which publishes no releases.
 
-This is an unofficial community overlay and is not affiliated with or endorsed by OpenAI, Dropbox, Filen, Helium, Nextcloud, 1Password, KDE, or the Gentoo project.
+This is an unofficial community overlay and is not affiliated with or endorsed by OpenAI, Dropbox, Filen, Helium, Nextcloud, 1Password, Information Architects, KDE, or the Gentoo project.
 
 ## License
 
