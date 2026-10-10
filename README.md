@@ -97,7 +97,7 @@ Desktop Syncing Client for Nextcloud
 
 Helium is a privacy-focused Chromium-based web browser with integrated content blocking and a minimal user interface.
 
-**Versions:** `0.18.3.1` (`~amd64`, `~arm64`)
+**Versions:** `0.19.2.1` (`~amd64`, `~arm64`)
 
 **USE flags**
 
