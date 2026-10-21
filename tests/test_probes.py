@@ -419,5 +419,65 @@ class DolphinDropboxProbeTests(unittest.TestCase):
         self.assertEqual(stderr.getvalue(), "")
 
 
+
+
+
+class WslKernelProbeTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.probe = load_probe(
+            "sys-kernel/wsl2-kernel/latest_version.py", "wsl_kernel_latest_version"
+        )
+
+    def test_extracts_stable_kernel_version(self):
+        payload = json.dumps({
+            "tag_name": "linux-msft-wsl-6.18.54.1",
+            "draft": False,
+            "prerelease": False,
+        })
+        self.assertEqual(self.probe.parse_release(payload), "6.18.54.1")
+
+    def test_rejects_drafts_prereleases_and_unexpected_tags(self):
+        for release in (
+            {"tag_name": "linux-msft-wsl-6.18.54.1", "draft": True},
+            {"tag_name": "linux-msft-wsl-6.18.54.1", "prerelease": True},
+            {"tag_name": "linux-msft-wsl-6.18.54.1-rc1"},
+            {"tag_name": "linux-msft-wsl-6.18.54"},
+            {"tag_name": "v6.18.54.1"},
+            {"tag_name": "linux-msft-wsl-6.18.54.1\n"},
+            {"tag_name": None},
+            {},
+            [],
+        ):
+            with self.subTest(release=release), self.assertRaises(RuntimeError):
+                self.probe.parse_release(json.dumps(release))
+        with self.assertRaises(RuntimeError):
+            self.probe.parse_release("not JSON")
+
+    def test_main_prints_only_the_version(self):
+        from unittest.mock import patch
+
+        stdout = StringIO()
+        stderr = StringIO()
+        with patch.object(self.probe, "latest_stable_version", return_value="6.18.54.1"):
+            with redirect_stdout(stdout), redirect_stderr(stderr):
+                result = self.probe.main([])
+        self.assertEqual(result, 0)
+        self.assertEqual(stdout.getvalue(), "6.18.54.1\n")
+        self.assertEqual(stderr.getvalue(), "")
+
+    def test_main_reports_failures_without_a_version(self):
+        from unittest.mock import patch
+
+        stdout = StringIO()
+        stderr = StringIO()
+        with patch.object(self.probe, "latest_stable_version", side_effect=RuntimeError("unavailable")):
+            with redirect_stdout(stdout), redirect_stderr(stderr):
+                result = self.probe.main([])
+        self.assertEqual(result, 1)
+        self.assertEqual(stdout.getvalue(), "")
+        self.assertIn("unavailable", stderr.getvalue())
+
+
 if __name__ == "__main__":
     unittest.main()

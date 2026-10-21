@@ -1,10 +1,10 @@
 # jkxyz/ebuilds
 
-A small [Gentoo](https://www.gentoo.org/) Portage overlay maintained by [jkxyz](https://github.com/jkxyz). It packages the 1Password, ChatGPT, Dropbox, Filen, and Nextcloud desktop clients, their related command-line or desktop integrations, the Helium browser, and the iA Writer Mono typeface.
+A small [Gentoo](https://www.gentoo.org/) Portage overlay maintained by [jkxyz](https://github.com/jkxyz). It packages the 1Password, ChatGPT, Dropbox, Filen, and Nextcloud desktop clients, their related command-line or desktop integrations, the Helium browser, the iA Writer Mono typeface, and Microsoft's WSL 2 kernel.
 
 ## Packages
 
-Versions marked `~amd64` or `~arm64` use Gentoo testing keywords; versions marked `amd64` or `arm64` are stable. The overlay does not enable any USE flags by default.
+Versions marked `~amd64` or `~arm64` use Gentoo testing keywords; versions marked `amd64` or `arm64` are stable. Kernel packages also inherit USE flags and defaults from Gentoo's kernel eclasses.
 
 The catalogue below is generated from the ebuilds and their `metadata.xml` files by `scripts/update_readme.py`.
 
@@ -101,6 +101,16 @@ Desktop Syncing Client for Nextcloud
 - `test` — Build and run the upstream test suite.
 - `webengine` — Enable old Flow1 login using dev-qt/qtwebengine
 
+### `sys-kernel/wsl2-kernel`
+
+Microsoft's WSL 2 kernel and matching modules image, with optional deployment to Windows through WSL_KERNEL_DIR in make.conf.
+
+**Versions:** `6.18.54.1` (`~amd64`, `~arm64`)
+
+**USE flags**
+
+- `debug`
+
 ### `www-client/helium-bin`
 
 Helium is a privacy-focused Chromium-based web browser with integrated content blocking and a minimal user interface.
@@ -146,6 +156,8 @@ net-misc/dropbox dropbox
 
 Install `kde-apps/dolphin-plugins-dropbox` to pull in the Dropbox client and CLI together with Dolphin integration. The CLI is available as both `dropbox-cli` and the upstream-compatible `dropbox` command.
 
+For `sys-kernel/wsl2-kernel`, see the [local testing and Windows deployment instructions](sys-kernel/wsl2-kernel/files/README.md). Set `WSL_KERNEL_DIR` in `make.conf` to optionally copy the kernel and modules image to versioned files on Windows. Add `WSL_AUTO_UPDATE_CONFIG=true` to back up `.wslconfig` and update its kernel paths automatically. The update workflow tracks Microsoft's latest stable WSL kernel release.
+
 ## Maintenance
 
 The `Update packages` workflow checks tracked packages daily and opens a pull request when it finds a new stable upstream release. A package opts into these checks by providing an executable `CATEGORY/PACKAGE/latest_version.py` probe that prints the latest stable Portage version. `media-fonts/ia-writer-mono` has no probe because upstream publishes no releases; its ebuild pins a repository commit and is updated by hand. Discovery and version comparison run directly on the Ubuntu runner; the Gentoo tools container starts only when an ebuild needs an update.
@@ -185,6 +197,7 @@ Keep an older stable ebuild until its replacement is stable on every architectur
 
 ## Provenance
 
+- `sys-kernel/wsl2-kernel` is based on [Phoenix591's ebuild](https://github.com/Phoenix591/gentoo-overlay/tree/master/sys-kernel/wsl2-kernel), with optional Windows deployment.
 - `net-misc/nextcloud-client` is based on [Gentoo's official 33.0.5 ebuild](https://gitweb.gentoo.org/repo/gentoo.git/tree/net-misc/nextcloud-client/nextcloud-client-33.0.5.ebuild).
 - `app-admin/1password-bin` is based on [jaredallard/overlay](https://github.com/jaredallard/overlay).
 - `app-admin/op-cli-bin` follows [Gentoo's historical ebuild](https://github.com/gentoo/gentoo/blob/master/app-admin/op-cli-bin/op-cli-bin-2.23.0.ebuild) and uses 1Password's official release artifacts.

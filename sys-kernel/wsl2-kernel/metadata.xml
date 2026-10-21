@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<longdescription>
+		Microsoft's WSL 2 kernel and matching modules image, with optional
+		deployment to Windows through WSL_KERNEL_DIR in make.conf.
+	</longdescription>
+	<upstream>
+		<remote-id type="github">microsoft/WSL2-Linux-Kernel</remote-id>
+		<changelog>https://github.com/microsoft/WSL2-Linux-Kernel/releases</changelog>
+		<bugs-to>https://github.com/microsoft/WSL/issues</bugs-to>
+	</upstream>
+</pkgmetadata>
