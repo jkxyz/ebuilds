@@ -100,18 +100,19 @@ powershell.exe -NoProfile -NonInteractive -WindowStyle Hidden -ExecutionPolicy B
 ```
 
 Inspect and install build dependencies through Portage. WSL supplies its own
-initramfs; disable the inherited `initramfs` flag. The inherited
-`installkernel` dependency is retained, but its bootloader hooks are not run.
+initramfs, so the overlay masks the inherited `initramfs` flag for this package.
+No manual USE override is needed. The inherited `installkernel` dependency is
+retained, but its bootloader hooks are not run.
 
 ```bash
-sudo env PORTAGE_REPOSITORIES="$repos" ACCEPT_KEYWORDS="~amd64" USE="-initramfs" \
+sudo env PORTAGE_REPOSITORIES="$repos" ACCEPT_KEYWORDS="~amd64" \
   emerge --ask --onlydeps "$atom"
 ```
 
 Build and stage the package without merging it or copying anything to Windows:
 
 ```bash
-sudo env PORTAGE_REPOSITORIES="$repos" ACCEPT_KEYWORDS="~amd64" USE="-initramfs" \
+sudo env PORTAGE_REPOSITORIES="$repos" ACCEPT_KEYWORDS="~amd64" \
   ebuild "$PWD/sys-kernel/wsl2-kernel/wsl2-kernel-6.18.54.1.ebuild" clean install
 ```
 
@@ -120,7 +121,7 @@ The resulting image is under Portage's build directory, normally
 Inspect its kernel and `modules.vhdx`. Then, when ready to test an installation:
 
 ```bash
-sudo env PORTAGE_REPOSITORIES="$repos" ACCEPT_KEYWORDS="~amd64" USE="-initramfs" \
+sudo env PORTAGE_REPOSITORIES="$repos" ACCEPT_KEYWORDS="~amd64" \
   ebuild "$PWD/sys-kernel/wsl2-kernel/wsl2-kernel-6.18.54.1.ebuild" merge
 ```
 
@@ -139,7 +140,7 @@ config phase (using the `repos` definition above):
 sudo install -m 0644 sys-kernel/wsl2-kernel/files/deploy.ps1 \
   /usr/share/wsl2-kernel/wsl2-kernel-6.18.54.1/deploy.ps1
 sudo env PORTAGE_REPOSITORIES="$repos" ACCEPT_KEYWORDS="~amd64" \
-  USE="-initramfs" FEATURES=noauto \
+  FEATURES=noauto \
   ebuild "$PWD/sys-kernel/wsl2-kernel/wsl2-kernel-6.18.54.1.ebuild" config
 ```
 
@@ -149,9 +150,10 @@ restarting WSL from Windows. No new kernel build is needed to replace the
 old junction-based selection.
 
 After publishing and syncing the overlay, put
-`sys-kernel/wsl2-kernel ~amd64` in `/etc/portage/package.accept_keywords/`
-and `sys-kernel/wsl2-kernel -initramfs` in `/etc/portage/package.use/`.
-Then use `emerge --ask sys-kernel/wsl2-kernel` normally.
+`sys-kernel/wsl2-kernel ~amd64` in `/etc/portage/package.accept_keywords/`.
+Then use `emerge --ask sys-kernel/wsl2-kernel` normally. An existing
+`-initramfs` entry in `/etc/portage/package.use/` may be removed; the overlay
+already disables this unsupported feature.
 
 ## Automatic version updates
 
