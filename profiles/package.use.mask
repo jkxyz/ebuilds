@@ -1,0 +1,2 @@
+# WSL supplies its own initramfs; the package does not run installkernel.
+sys-kernel/wsl2-kernel initramfs
