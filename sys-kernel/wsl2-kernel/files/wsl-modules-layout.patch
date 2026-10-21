@@ -1,0 +1,16 @@
+WSL 2.7.13 mounts the VHD root at /lib/modules/<release>. Newer WSL
+selects <release>/modules instead. Expose both layouts, using hard links
+so the module contents are stored only once.
+
+--- a/Microsoft/scripts/gen_artifacts_vhdx.sh
++++ b/Microsoft/scripts/gen_artifacts_vhdx.sh
+@@ -50,6 +50,9 @@
+ mkdir -p "$artifacts_dir/perf"
+ cp -r "$perf_dir/." "$artifacts_dir/perf"
+ 
++# Keep the root module tree for WSL releases predating the artifacts layout.
++cp -al "$artifacts_dir/modules/." "$staging_dir/"
++
+ # Calculate the image size (staging size + 256MiB for slack)
+ staging_size=$(du -bs "$staging_dir" | awk '{print $1;}')
+ image_size=$((staging_size + (256 * (1 << 20))))

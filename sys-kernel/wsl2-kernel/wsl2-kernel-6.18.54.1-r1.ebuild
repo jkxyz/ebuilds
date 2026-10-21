@@ -14,6 +14,8 @@ LICENSE="GPL-2"
 KEYWORDS="~amd64 ~arm64"
 IUSE="debug"
 
+PATCHES=( "${FILESDIR}/wsl-modules-layout.patch" )
+
 BDEPEND="
 	app-emulation/qemu
 	dev-libs/openssl

@@ -4,6 +4,8 @@ Builds Microsoft's WSL kernel with its default configuration, plus a VHDX with
 matching modules and UAPI headers. Gentoo's `kernel-build` eclass handles the
 build, saved configuration, and installed sources for external modules.
 Configuration fragments in `/etc/kernel/config.d/*.config` also apply.
+The modules image supports both WSL 2.7.13's flat layout and newer WSL's
+nested artifacts layout. Both paths share the same module data.
 Compiler tuning is not changed. Install `dev-util/perf` separately if needed.
 
 ## Optional Windows deployment
@@ -64,7 +66,7 @@ then shut it down; avoid starting the VM concurrently with deployment.
 To retry deployment or select an installed older package without rebuilding:
 
 ```bash
-sudo emerge --config =sys-kernel/wsl2-kernel-6.18.54.1
+sudo emerge --config =sys-kernel/wsl2-kernel-6.18.54.1-r1
 ```
 
 Old release directories may be removed manually after they are no longer
@@ -86,7 +88,7 @@ Replace the checkout path if necessary.
 ```bash
 cd /home/josh/src/gentoo/jkxyz-ebuilds
 repos=$(printf '[DEFAULT]\nmain-repo = gentoo\n[gentoo]\nlocation = /var/db/repos/gentoo\n[jkxyz-ebuilds]\nlocation = %s\nmasters = gentoo\nauto-sync = no\n' "$PWD")
-atom='=sys-kernel/wsl2-kernel-6.18.54.1::jkxyz-ebuilds'
+atom='=sys-kernel/wsl2-kernel-6.18.54.1-r1::jkxyz-ebuilds'
 ```
 
 Test the Windows helper with disposable dummy artifacts and a temporary
@@ -97,6 +99,17 @@ not change your WSL boot configuration.
 ```bash
 powershell.exe -NoProfile -NonInteractive -WindowStyle Hidden -ExecutionPolicy Bypass \
   -File "$(wslpath -w "$PWD/tests/test_wsl_kernel_deploy.ps1")"
+```
+
+To test the modules image layout, point `WSL_KERNEL_SOURCE` at an unpacked,
+unmodified source archive for this kernel and run the image regression test.
+It applies the compatibility patch, builds a small VHDX, and checks both WSL
+layouts and shared module data. Requires `patch`, `mke2fs`, `qemu-img`, and
+`debugfs`; it does not need root or mount any images.
+
+```bash
+WSL_KERNEL_SOURCE=/path/to/unpacked/WSL2-Linux-Kernel-linux-msft-wsl-6.18.54.1 \
+  python3 -m unittest discover -s tests -p test_wsl_kernel_modules.py -v
 ```
 
 Inspect and install build dependencies through Portage. WSL supplies its own
@@ -112,16 +125,16 @@ Build and stage the package without merging it or copying anything to Windows:
 
 ```bash
 sudo env PORTAGE_REPOSITORIES="$repos" ACCEPT_KEYWORDS="~amd64" USE="-initramfs" \
-  ebuild "$PWD/sys-kernel/wsl2-kernel/wsl2-kernel-6.18.54.1.ebuild" clean install
+  ebuild "$PWD/sys-kernel/wsl2-kernel/wsl2-kernel-6.18.54.1-r1.ebuild" clean install
 ```
 
 The resulting image is under Portage's build directory, normally
-`/var/tmp/portage/sys-kernel/wsl2-kernel-6.18.54.1/image/usr/src/`.
+`/var/tmp/portage/sys-kernel/wsl2-kernel-6.18.54.1-r1/image/usr/src/`.
 Inspect its kernel and `modules.vhdx`. Then, when ready to test an installation:
 
 ```bash
 sudo env PORTAGE_REPOSITORIES="$repos" ACCEPT_KEYWORDS="~amd64" USE="-initramfs" \
-  ebuild "$PWD/sys-kernel/wsl2-kernel/wsl2-kernel-6.18.54.1.ebuild" merge
+  ebuild "$PWD/sys-kernel/wsl2-kernel/wsl2-kernel-6.18.54.1-r1.ebuild" merge
 ```
 
 `merge` uses the staged build and runs the optional Windows deployment.
@@ -140,7 +153,7 @@ sudo install -m 0644 sys-kernel/wsl2-kernel/files/deploy.ps1 \
   /usr/share/wsl2-kernel/wsl2-kernel-6.18.54.1/deploy.ps1
 sudo env PORTAGE_REPOSITORIES="$repos" ACCEPT_KEYWORDS="~amd64" \
   USE="-initramfs" FEATURES=noauto \
-  ebuild "$PWD/sys-kernel/wsl2-kernel/wsl2-kernel-6.18.54.1.ebuild" config
+  ebuild "$PWD/sys-kernel/wsl2-kernel/wsl2-kernel-6.18.54.1-r1.ebuild" config
 ```
 
 Set `WSL_AUTO_UPDATE_CONFIG=true` in `/etc/portage/make.conf` before this step
@@ -165,4 +178,5 @@ Manifest. Drafts, prereleases, and unexpected tags are rejected.
 Based on Phoenix591's GPL-2
 [wsl2-kernel ebuild](https://github.com/Phoenix591/gentoo-overlay/tree/master/sys-kernel/wsl2-kernel).
 The modules image uses Microsoft's `Microsoft/scripts/gen_artifacts_vhdx.sh`
-from the same pinned kernel source release.
+from the same pinned kernel source release, with a compatibility patch for
+WSL versions that mount the module tree from the image root.

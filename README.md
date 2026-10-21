@@ -105,7 +105,7 @@ Desktop Syncing Client for Nextcloud
 
 Microsoft's WSL 2 kernel and matching modules image, with optional deployment to Windows through WSL_KERNEL_DIR in make.conf.
 
-**Versions:** `6.18.54.1` (`~amd64`, `~arm64`)
+**Versions:** `6.18.54.1-r1` (`~amd64`, `~arm64`)
 
 **USE flags**
 
