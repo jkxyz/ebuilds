@@ -5,7 +5,7 @@ must have `USE=dynamic-loading` enabled. Accept `~amd64` (or `~arm64`) for
 `app-emacs/ghostel`, then install it with:
 
 ```sh
-PORTAGE_SCHEDULING_POLICY=idle emerge --ask app-emacs/ghostel
+emerge --ask app-emacs/ghostel
 ```
 
 ## Choosing the compiler
@@ -19,8 +19,8 @@ Portage normally reuses an installed provider. To choose the binary compiler
 before installing Ghostel:
 
 ```sh
-PORTAGE_SCHEDULING_POLICY=idle emerge --ask --oneshot dev-lang/zig-bin:0.16
-PORTAGE_SCHEDULING_POLICY=idle emerge --ask app-emacs/ghostel
+emerge --ask --oneshot dev-lang/zig-bin:0.16
+emerge --ask app-emacs/ghostel
 ```
 
 For source Zig, accept its testing keyword and install

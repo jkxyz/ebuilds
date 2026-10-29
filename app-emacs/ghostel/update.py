@@ -34,9 +34,8 @@ pub fn main(init: std.process.Init) !void {
 
 def run_zig(zig: str, source: Path, *args: str) -> str:
     result = subprocess.run(
-        ["chrt", "--idle", "0", zig, *args],
+        [zig, *args],
         cwd=source,
-        env={**os.environ, "PORTAGE_SCHEDULING_POLICY": "idle"},
         check=True,
         stdout=subprocess.PIPE,
         text=True,
