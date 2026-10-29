@@ -1,6 +1,6 @@
 # jkxyz/ebuilds
 
-A small [Gentoo](https://www.gentoo.org/) Portage overlay maintained by [jkxyz](https://github.com/jkxyz). It packages the 1Password, ChatGPT, Dropbox, Filen, and Nextcloud desktop clients, their related command-line or desktop integrations, the Helium browser, the iA Writer Mono typeface, and Microsoft's WSL 2 kernel.
+A small [Gentoo](https://www.gentoo.org/) Portage overlay maintained by [jkxyz](https://github.com/jkxyz). It packages Ghostel for Emacs, the 1Password, ChatGPT, Dropbox, Filen, and Nextcloud desktop clients, their related command-line or desktop integrations, the Helium browser, the iA Writer Mono typeface, and Microsoft's WSL 2 kernel.
 
 ## Packages
 
@@ -36,6 +36,16 @@ The official 1Password command-line client for Linux.
 **Versions:** `2.41.1` (`~amd64`, `~arm64`)
 
 **USE flags:** none
+
+### `app-emacs/ghostel`
+
+Ghostel is an Emacs terminal emulator powered by libghostty. Builds the native Zig module and installs matching Emacs Lisp, shell integration, and terminfo resources.
+
+**Versions:** `0.59.0` (`~amd64`, `~arm64`)
+
+**USE flags**
+
+- `test` — Build and run the upstream test suite.
 
 ### `app-misc/chatgpt-bin`
 
@@ -157,6 +167,8 @@ net-misc/dropbox dropbox
 Install `kde-apps/dolphin-plugins-dropbox` to pull in the Dropbox client and CLI together with Dolphin integration. The CLI is available as both `dropbox-cli` and the upstream-compatible `dropbox` command.
 
 For `sys-kernel/wsl2-kernel`, see the [local testing and Windows deployment instructions](sys-kernel/wsl2-kernel/files/README.md). Set `WSL_KERNEL_DIR` in `make.conf` to optionally copy the kernel and modules image to versioned files on Windows. Add `WSL_AUTO_UPDATE_CONFIG=true` to back up `.wslconfig` and update its kernel paths automatically. The update workflow tracks Microsoft's latest stable WSL kernel release.
+
+For `app-emacs/ghostel`, see the [compiler selection and Emacs setup instructions](app-emacs/ghostel/README.md).
 
 ## Maintenance
 
