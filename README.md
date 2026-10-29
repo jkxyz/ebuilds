@@ -1,6 +1,6 @@
 # jkxyz/ebuilds
 
-A small [Gentoo](https://www.gentoo.org/) Portage overlay maintained by [jkxyz](https://github.com/jkxyz). It packages the 1Password, ChatGPT, Dropbox, Filen, and Nextcloud desktop clients, their related command-line or desktop integrations, the Helium browser, the iA Writer Mono typeface, and Microsoft's WSL 2 kernel.
+A small [Gentoo](https://www.gentoo.org/) Portage overlay maintained by [jkxyz](https://github.com/jkxyz). It packages Ghostel for Emacs, the 1Password, ChatGPT, Dropbox, Filen, and Nextcloud desktop clients, their related command-line or desktop integrations, the Helium browser, the iA Writer Mono typeface, and Microsoft's WSL 2 kernel.
 
 ## Packages
 
@@ -36,6 +36,16 @@ The official 1Password command-line client for Linux.
 **Versions:** `2.41.1` (`~amd64`, `~arm64`)
 
 **USE flags:** none
+
+### `app-emacs/ghostel`
+
+Ghostel is an Emacs terminal emulator powered by libghostty. Install dev-lang/zig-bin to avoid building the Zig compiler.
+
+**Versions:** `0.59.0` (`~amd64`, `~arm64`)
+
+**USE flags**
+
+- `test` — Build and run the upstream test suite.
 
 ### `app-misc/chatgpt-bin`
 
@@ -174,7 +184,7 @@ git diff --check
 git diff
 ```
 
-`scripts/bump_packages.py` creates a testing-keyworded ebuild from the newest existing version. The tools used by CI are defined in `tools/Containerfile` when a matching local environment is needed.
+`scripts/bump_packages.py` creates a testing-keyworded ebuild from the newest existing version. If the package provides `update.py`, the helper runs it with the new ebuild filename from the package directory, then regenerates the Manifest. The tools used by CI are defined in `tools/Containerfile` when a matching local environment is needed.
 
 When adding, bumping, stabilizing, or removing an ebuild, regenerate the package catalogue. The automated update workflow does this after every successful package bump.
 

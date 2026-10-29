@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<maintainer type="person">
+		<email>josh@joshkingsley.me</email>
+		<name>Josh Kingsley</name>
+	</maintainer>
+	<longdescription>
+		Ghostel is an Emacs terminal emulator powered by libghostty.
+		Install <pkg>dev-lang/zig-bin</pkg> to avoid building the Zig compiler.
+	</longdescription>
+	<upstream>
+		<remote-id type="github">dakra/ghostel</remote-id>
+	</upstream>
+</pkgmetadata>
