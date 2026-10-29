@@ -215,7 +215,7 @@ def bump(
     root: Path = REPOSITORY_ROOT,
     runner: Runner | None = None,
 ) -> BumpResult:
-    """Bump ``atom`` to ``version`` without contacting an upstream service."""
+    """Bump ``atom`` to ``version`` and run its optional package update hook."""
 
     if runner is None:
         runner = subprocess.run
@@ -241,6 +241,10 @@ def bump(
     if not destination.is_file():
         raise BumpError(f"pkgbump did not create {destination.name}")
 
+    hook = directory / "update.py"
+    if hook.is_file():
+        _run_tool(runner, [sys.executable, str(hook), destination.name], directory)
+
     generated_keywords = keywords(destination)
     if not any(value.startswith("~") for value in generated_keywords):
         raise BumpError(f"{destination.name} has no testing keyword")
@@ -255,6 +259,10 @@ def bump(
             continue
         if testing_only(keywords(release.path, required=False)):
             release.path.unlink()
+
+    if hook.is_file():
+        # The hook can change SRC_URI; discard stale distfiles after pruning.
+        _run_tool(runner, ["pkgdev", "manifest"], directory)
 
     return BumpResult(
         atom=atom,

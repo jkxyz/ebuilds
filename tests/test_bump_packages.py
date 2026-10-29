@@ -134,6 +134,60 @@ class BumpTests(BumpFixture):
         )
         self.assertTrue(source.exists())
 
+    def test_package_hook_runs_before_manifest_and_old_testing_removal(self):
+        current = self.add("1.0.0", "~amd64 ~arm64")
+        hook = self.package / "update.py"
+        hook.write_text("# fixture\n", encoding="utf-8")
+        calls = []
+        base_runner = self.fake_runner(calls)
+
+        def runner(command, cwd, **kwargs):
+            if command[0] == "pkgdev":
+                self.assertFalse(current.exists())
+                self.assertIn("updated URI", (self.package / "fixture-bin-1.1.0.ebuild").read_text())
+            elif str(hook) in command:
+                self.assertTrue(current.exists())
+                (Path(cwd) / command[-1]).write_text('KEYWORDS="~amd64"\n# updated URI\n')
+            return base_runner(command, cwd, **kwargs)
+
+        bump_packages.bump("app-test/fixture-bin", "1.1.0", root=self.root, runner=runner)
+        self.assertEqual(calls[1][0], [bump_packages.sys.executable, str(hook), "fixture-bin-1.1.0.ebuild"])
+        self.assertEqual(calls[2][0], ["pkgdev", "manifest"])
+
+    def test_failed_package_hook_stops_before_manifest_and_keeps_old_ebuild(self):
+        current = self.add("1.0.0", "~amd64 ~arm64")
+        hook = self.package / "update.py"
+        hook.write_text("# fixture\n", encoding="utf-8")
+        calls = []
+        base_runner = self.fake_runner(calls)
+
+        def runner(command, cwd, **kwargs):
+            if str(hook) in command:
+                raise subprocess.CalledProcessError(1, command)
+            return base_runner(command, cwd, **kwargs)
+
+        with self.assertRaises(subprocess.CalledProcessError):
+            bump_packages.bump("app-test/fixture-bin", "1.1.0", root=self.root, runner=runner)
+        self.assertTrue(current.exists())
+        self.assertEqual([call[0][0] for call in calls], ["pkgbump"])
+
+    def test_package_hook_cannot_stabilize_the_generated_ebuild(self):
+        current = self.add("1.0.0", "~amd64 ~arm64")
+        hook = self.package / "update.py"
+        hook.write_text("# fixture\n", encoding="utf-8")
+        calls = []
+        base_runner = self.fake_runner(calls)
+
+        def runner(command, cwd, **kwargs):
+            if str(hook) in command:
+                (Path(cwd) / command[-1]).write_text('KEYWORDS="amd64"\n')
+            return base_runner(command, cwd, **kwargs)
+
+        with self.assertRaises(bump_packages.BumpError):
+            bump_packages.bump("app-test/fixture-bin", "1.1.0", root=self.root, runner=runner)
+        self.assertTrue(current.exists())
+        self.assertFalse(any(call[0][0] == "pkgdev" for call in calls))
+
     def test_generated_keywords_are_validated(self):
         self.add("1.0.0", "amd64")
         calls = []

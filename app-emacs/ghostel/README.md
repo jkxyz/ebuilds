@@ -47,11 +47,24 @@ Check the installation with `M-: (locate-library "ghostel")` and
 
 ## Updating
 
-Bump the release and review its required Zig version and complete dependency
-set together. Regenerate the Manifest and package catalogue, then build with
-`USE=test`. The dependency archives are fetched by Portage, and compilation
-uses Zig's offline `--system` mode. A local Ghostty fork works around Zig
-0.16's handling of nested path dependencies in that mode.
+The daily update workflow checks stable Ghostel releases. The package's
+`update.py` hook resolves upstream's pinned dependencies for amd64 and arm64 with glibc and musl,
+refreshes `ZBS_DEPENDENCIES`, and lets the shared bump helper regenerate the
+Manifest. Zig verifies upstream's package hashes; Portage records separate
+archive checksums. The hook configures the build without compiling the module.
 
-This package has no automatic version probe because simply changing `PV`
-would leave the pinned dependency archives stale.
+Manual bumps through `scripts/bump_packages.py app-emacs/ghostel VERSION` run
+the same hook. The tools container supplies Zig 0.16.0; locally, install that
+version of either compiler or set `ZIG_EXE` to its executable. To regenerate
+an existing ebuild, run:
+
+```sh
+app-emacs/ghostel/update.py app-emacs/ghostel/ghostel-0.59.0.ebuild
+pkgdev manifest app-emacs/ghostel
+```
+
+If upstream changes its required Zig version, the hook stops for review of
+the compiler dependency, build options, and tools image. Regenerated updates
+still need a build with `USE=test` before merging. Compilation uses Zig's
+offline `--system` mode; a local Ghostty fork works around Zig 0.16's handling
+of nested path dependencies in that mode.

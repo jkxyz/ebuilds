@@ -171,4 +171,4 @@ jobs:
           body: |
             Updates `${{ matrix.atom }}` from `${{ matrix.previous_version }}` to `${{ matrix.version }}`.
 
-            The package's stable version probe reported this release. `pkgbump` created the testing ebuild and regenerated its Manifest, the README catalogue was refreshed, and `pkgcheck` completed the GentooCI scan against the repository refreshed once for this update run.
+            The package's stable version probe reported this release. The bump helper created the testing ebuild, ran its package update hook when present, and regenerated the Manifest. The README catalogue was refreshed and the GentooCI scan completed against the refreshed Gentoo repository.
