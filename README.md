@@ -39,7 +39,7 @@ The official 1Password command-line client for Linux.
 
 ### `app-emacs/ghostel`
 
-Ghostel is an Emacs terminal emulator powered by libghostty. Builds the native Zig module and installs matching Emacs Lisp, shell integration, and terminfo resources.
+Ghostel is an Emacs terminal emulator powered by libghostty. Install dev-lang/zig-bin to avoid building the Zig compiler.
 
 **Versions:** `0.59.0` (`~amd64`, `~arm64`)
 
@@ -168,8 +168,6 @@ Install `kde-apps/dolphin-plugins-dropbox` to pull in the Dropbox client and CLI
 
 For `sys-kernel/wsl2-kernel`, see the [local testing and Windows deployment instructions](sys-kernel/wsl2-kernel/files/README.md). Set `WSL_KERNEL_DIR` in `make.conf` to optionally copy the kernel and modules image to versioned files on Windows. Add `WSL_AUTO_UPDATE_CONFIG=true` to back up `.wslconfig` and update its kernel paths automatically. The update workflow tracks Microsoft's latest stable WSL kernel release.
 
-For `app-emacs/ghostel`, see the [compiler selection and Emacs setup instructions](app-emacs/ghostel/README.md).
-
 ## Maintenance
 
 The `Update packages` workflow checks tracked packages daily and opens a pull request when it finds a new stable upstream release. A package opts into these checks by providing an executable `CATEGORY/PACKAGE/latest_version.py` probe that prints the latest stable Portage version. `media-fonts/ia-writer-mono` has no probe because upstream publishes no releases; its ebuild pins a repository commit and is updated by hand. Discovery and version comparison run directly on the Ubuntu runner; the Gentoo tools container starts only when an ebuild needs an update.
@@ -186,7 +184,7 @@ git diff --check
 git diff
 ```
 
-`scripts/bump_packages.py` creates a testing-keyworded ebuild from the newest existing version. If the package provides `update.py`, the helper runs it with the new ebuild filename from the package directory, then regenerates the Manifest. Ghostel uses this hook to refresh its upstream Zig dependencies; failures prevent publication of that update. The tools used by CI are defined in `tools/Containerfile` when a matching local environment is needed.
+`scripts/bump_packages.py` creates a testing-keyworded ebuild from the newest existing version. If the package provides `update.py`, the helper runs it with the new ebuild filename from the package directory, then regenerates the Manifest. The tools used by CI are defined in `tools/Containerfile` when a matching local environment is needed.
 
 When adding, bumping, stabilizing, or removing an ebuild, regenerate the package catalogue. The automated update workflow does this after every successful package bump.
 

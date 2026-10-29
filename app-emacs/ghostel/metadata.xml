@@ -7,8 +7,7 @@
 	</maintainer>
 	<longdescription>
 		Ghostel is an Emacs terminal emulator powered by libghostty.
-		Builds the native Zig module and installs matching Emacs Lisp,
-		shell integration, and terminfo resources.
+		Install <pkg>dev-lang/zig-bin</pkg> to avoid building the Zig compiler.
 	</longdescription>
 	<upstream>
 		<remote-id type="github">dakra/ghostel</remote-id>
