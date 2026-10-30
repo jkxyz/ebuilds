@@ -51,7 +51,7 @@ Ghostel is an Emacs terminal emulator powered by libghostty. Install dev-lang/zi
 
 ChatGPT is OpenAI's desktop application for Chat, Work, and Codex. It can work with local projects, files, and development tools.
 
-**Versions:** `26.1023.51421` (`~amd64`, `~arm64`)
+**Versions:** `26.1027.30824` (`~amd64`, `~arm64`)
 
 **USE flags:** none
 
