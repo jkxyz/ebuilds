@@ -17,7 +17,7 @@ def load(name, filename):
 
 
 hook = load("ghostel_update", "update.py")
-probe = load("ghostel_probe", "latest_version.py")
+probe = load("ghostel_probe", "latest_version_disabled.py")
 
 
 class GhostelUpdateTests(unittest.TestCase):

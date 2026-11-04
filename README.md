@@ -172,6 +172,8 @@ For `sys-kernel/wsl2-kernel`, see the [local testing and Windows deployment inst
 
 The `Update packages` workflow checks tracked packages daily and opens a pull request when it finds a new stable upstream release. A package opts into these checks by providing an executable `CATEGORY/PACKAGE/latest_version.py` probe that prints the latest stable Portage version. `media-fonts/ia-writer-mono` has no probe because upstream publishes no releases; its ebuild pins a repository commit and is updated by hand. Discovery and version comparison run directly on the Ubuntu runner; the Gentoo tools container starts only when an ebuild needs an update.
 
+Automatic updates for `app-emacs/ghostel` are paused until Gentoo packages Zig 0.17.0, which Ghostel 0.60.0 requires. Restore `app-emacs/ghostel/latest_version_disabled.py` to `latest_version.py` after updating the ebuild, update hook, and tools image for that compiler.
+
 For a manual update, run the package's probe, bump the ebuild, regenerate its Manifest, run the Gentoo CI checks, and inspect the complete diff:
 
 ```bash
