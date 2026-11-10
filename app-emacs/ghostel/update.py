@@ -16,7 +16,8 @@ from urllib.parse import urlsplit
 from urllib.request import Request, urlopen
 
 
-ZIG_VERSION = "0.16.0"
+ZIG_VERSION = "0.17.1"
+MINIMUM_ZIG_VERSION = "0.17.0"
 TARGETS = (
     "x86_64-linux-gnu", "x86_64-linux-musl",
     "aarch64-linux-gnu", "aarch64-linux-musl",
@@ -36,6 +37,11 @@ def run_zig(zig: str, source: Path, *args: str) -> str:
     result = subprocess.run(
         [zig, *args],
         cwd=source,
+        env={
+            **os.environ,
+            "ZIG_LOCAL_PKG_DIR": "zig-pkg",
+            "ZIG_GLOBAL_CACHE_DIR": str(source / ".zig-cache/global"),
+        },
         check=True,
         stdout=subprocess.PIPE,
         text=True,
@@ -72,9 +78,12 @@ def dependency_archives(manifests: list[dict], fetched: set[str]) -> dict[str, s
     for manifest in manifests:
         for dependency in (manifest.get("dependencies") or {}).values():
             package_hash = dependency.get("hash")
-            if package_hash not in fetched:
+            if package_hash not in fetched or package_hash in matched:
                 continue
             url = dependency["url"]
+            # Another manifest must provide an archive for the same package hash.
+            if url.startswith("git+"):
+                continue
             name = archive_name(url)
             if name in archives and archives[name] != url:
                 raise RuntimeError(f"conflicting dependency archive: {name}")
@@ -127,7 +136,7 @@ def update(ebuild: Path) -> None:
         source = work / f"ghostel-{version}"
         root_manifest = source / "build.zig.zon"
         manifest = read_manifests(zig, source, [root_manifest])[0]
-        if manifest["version"] != version or manifest["minimum_zig_version"] != ZIG_VERSION:
+        if manifest["version"] != version or manifest["minimum_zig_version"] != MINIMUM_ZIG_VERSION:
             raise RuntimeError("upstream changed its version or required Zig; review the ebuild and update hook")
         # A clean package directory ensures cached or unrelated packages cannot
         # leak into the generated list. Zig checks upstream's hashes on fetch.

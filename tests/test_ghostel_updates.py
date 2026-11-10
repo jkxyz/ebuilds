@@ -17,7 +17,7 @@ def load(name, filename):
 
 
 hook = load("ghostel_update", "update.py")
-probe = load("ghostel_probe", "latest_version_disabled.py")
+probe = load("ghostel_probe", "latest_version.py")
 
 
 class GhostelUpdateTests(unittest.TestCase):
@@ -41,6 +41,20 @@ class GhostelUpdateTests(unittest.TestCase):
             "ghostty-abc.tar.gz": "https://github.com/ghostty-org/ghostty/archive/abc.tar.gz",
             "selected.tar.gz": "https://example.org/selected.tar.gz",
         })
+
+    def test_uses_archive_mirror_for_git_dependency_with_same_hash(self):
+        git = {"dependencies": {"aro": {
+            "hash": "aro-hash", "url": "git+https://codeberg.org/ziglang/arocc#abc",
+        }}}
+        archive = {"dependencies": {"aro": {
+            "hash": "aro-hash", "url": "https://deps.files.ghostty.org/aro-abc.tar.gz",
+        }}}
+        for manifests in ([git, archive], [archive, git]):
+            self.assertEqual(hook.dependency_archives(manifests, {"aro-hash"}), {
+                "aro-abc.tar.gz": "https://deps.files.ghostty.org/aro-abc.tar.gz",
+            })
+        with self.assertRaisesRegex(RuntimeError, "no upstream URL"):
+            hook.dependency_archives([git], {"aro-hash"})
 
     def test_rejects_missing_dependency_url_and_filename_collision(self):
         with self.assertRaisesRegex(RuntimeError, "no upstream URL"):
