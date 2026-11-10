@@ -39,9 +39,9 @@ The official 1Password command-line client for Linux.
 
 ### `app-emacs/ghostel`
 
-Ghostel is an Emacs terminal emulator powered by libghostty. Install dev-lang/zig-bin to avoid building the Zig compiler.
+Emacs terminal emulator powered by libghostty
 
-**Versions:** `0.59.0` (`~amd64`, `~arm64`)
+**Versions:** `0.62.0` (`~amd64`, `~arm64`)
 
 **USE flags**
 
