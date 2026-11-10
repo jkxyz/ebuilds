@@ -2,7 +2,7 @@
 
 # Repository metadata is mounted only while installing tools; update runs supply a fresh rsync volume.
 # The pinned stage3 already includes Portage's verified-rsync runtime and Gentoo release keys.
-FROM docker.io/gentoo/portage:latest@sha256:daf0572af8e40096591cf6c9ff9dc15293625582c93a165410f1e8d3090e5cd6 AS portage
+FROM docker.io/gentoo/portage:latest@sha256:700990b713e1be5ac2e0fb67e9fa55b8155eaa42646e0d14601dbdf07021984d AS portage
 
 FROM docker.io/gentoo/stage3:latest@sha256:e54c014546d9015a83577160514c16d4709d0c7eb792df4da2e3fb70b16197dc
 
@@ -11,10 +11,13 @@ LABEL org.opencontainers.image.source="https://github.com/jkxyz/ebuilds"
 COPY tools/gentoo.conf /etc/portage/repos.conf
 
 RUN --mount=type=bind,from=portage,source=/var/db/repos/gentoo,target=/var/db/repos/gentoo \
-    USE="text" emerge --getbinpkg --jobs=2 --oneshot \
+    mkdir -p /etc/portage/package.accept_keywords \
+    && printf '%s\n' 'dev-lang/zig:0.17 ~amd64' 'llvm-core/*:22 ~amd64' 'llvm-runtimes/*:22 ~amd64' \
+        > /etc/portage/package.accept_keywords/zig \
+    && USE="text" emerge --getbinpkg --jobs=2 --oneshot \
         app-portage/gentoolkit \
         app-portage/mgorny-dev-scripts \
-        '=dev-lang/zig-bin-0.16.0*' \
+        '=dev-lang/zig-0.17.1*' \
         dev-util/pkgcheck \
         dev-util/pkgdev \
         dev-vcs/git \
