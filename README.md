@@ -41,7 +41,7 @@ The official 1Password command-line client for Linux.
 
 Emacs terminal emulator powered by libghostty
 
-**Versions:** `0.62.0` (`~amd64`, `~arm64`)
+**Versions:** `0.63.0` (`~amd64`, `~arm64`)
 
 **USE flags**
 
