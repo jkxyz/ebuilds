@@ -6,6 +6,7 @@ from io import StringIO
 import json
 from pathlib import Path
 import unittest
+from unittest.mock import patch
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -169,26 +170,34 @@ class NextcloudProbeTests(unittest.TestCase):
             "nextcloud_latest_version",
         )
 
-    def test_parses_latest_stable_release(self):
-        payload = '{"tag_name":"v34.0.1","draft":false,"prerelease":false}'
-        self.assertEqual(self.probe.parse_release(payload), "34.0.1")
+    def test_selects_highest_numeric_stable_version_across_pages(self):
+        pages = [
+            [
+                {"tag_name": "v34.0.7"},
+                {"tag_name": "v35.0.9"},
+                {"tag_name": "v36.0.0", "prerelease": True},
+                {"tag_name": "v37.0.0", "draft": True},
+                {"tag_name": "latest"},
+                {"tag_name": "v38.0.0-rc1"},
+            ],
+            [{"tag_name": "v35.0.10"}],
+        ]
+        with patch.object(self.probe, "PAGE_SIZE", 6):
+            with patch.object(self.probe, "fetch_page", side_effect=pages) as fetch_page:
+                self.assertEqual(self.probe.latest_stable_version(), "35.0.10")
+        self.assertEqual([call.args for call in fetch_page.call_args_list], [(1,), (2,)])
 
-    def test_rejects_prereleases_and_malformed_versions(self):
-        with self.assertRaises(RuntimeError):
-            self.probe.parse_release(
-                '{"tag_name":"v34.0.2-rc1","draft":false,"prerelease":true}'
-            )
-        with self.assertRaises(RuntimeError):
-            self.probe.parse_release(
-                '{"tag_name":"latest","draft":false,"prerelease":false}'
-            )
+    def test_rejects_release_list_without_supported_stable_versions(self):
+        with patch.object(self.probe, "fetch_page", return_value=[{"tag_name": "latest"}]):
+            with self.assertRaisesRegex(RuntimeError, "no stable Nextcloud"):
+                self.probe.latest_stable_version()
 
     def test_main_prints_only_the_version(self):
-        self.probe.latest_stable_version = lambda: "34.0.1"
         stdout = StringIO()
         stderr = StringIO()
-        with redirect_stdout(stdout), redirect_stderr(stderr):
-            result = self.probe.main([])
+        with patch.object(self.probe, "fetch_page", return_value=[{"tag_name": "v34.0.1"}]):
+            with redirect_stdout(stdout), redirect_stderr(stderr):
+                result = self.probe.main([])
         self.assertEqual(result, 0)
         self.assertEqual(stdout.getvalue(), "34.0.1\n")
         self.assertEqual(stderr.getvalue(), "")

@@ -1,61 +1,60 @@
 #!/usr/bin/env python3
-"""Print the newest stable Nextcloud Desktop release from GitHub."""
+"""Print the highest stable Nextcloud Desktop version from GitHub."""
 
 from __future__ import annotations
 
+from itertools import count
 import json
 import re
 import sys
 from urllib.request import Request, urlopen
 
 
-RELEASE_URL = "https://api.github.com/repos/nextcloud/desktop/releases/latest"
+RELEASE_URL = "https://api.github.com/repos/nextcloud/desktop/releases"
+PAGE_SIZE = 100
 USER_AGENT = "jkxyz-ebuilds-version-probe/1"
 VERSION_PATTERN = re.compile(r"\d+(?:\.\d+)+\Z")
 
 
-def fetch(url: str = RELEASE_URL) -> str:
-    """Fetch GitHub's latest-release response."""
+def fetch_page(page: int) -> list[dict]:
+    """Fetch one page of GitHub releases."""
 
     request = Request(
-        url,
+        f"{RELEASE_URL}?per_page={PAGE_SIZE}&page={page}",
         headers={
             "Accept": "application/vnd.github+json",
             "User-Agent": USER_AGENT,
         },
     )
     with urlopen(request, timeout=120) as response:
-        return response.read().decode("utf-8")
+        releases = json.load(response)
+
+    if not isinstance(releases, list) or not all(
+        isinstance(release, dict) for release in releases
+    ):
+        raise RuntimeError("the GitHub release response is not a list of releases")
+    return releases
 
 
-def parse_release(payload: str) -> str:
-    """Return the numeric version from a stable GitHub release response."""
+def latest_stable_version() -> str:
+    versions = []
+    for page in count(1):
+        releases = fetch_page(page)
+        for release in releases:
+            if release.get("draft") or release.get("prerelease"):
+                continue
+            tag = release.get("tag_name")
+            if not isinstance(tag, str):
+                continue
+            version = tag.removeprefix("v")
+            if VERSION_PATTERN.fullmatch(version):
+                versions.append(version)
+        if len(releases) < PAGE_SIZE:
+            break
 
-    try:
-        release = json.loads(payload)
-    except json.JSONDecodeError as error:
-        raise RuntimeError(
-            f"could not parse the GitHub release response: {error}"
-        ) from error
-
-    if not isinstance(release, dict):
-        raise RuntimeError("the GitHub release response is not an object")
-    if release.get("draft") or release.get("prerelease"):
-        raise RuntimeError("GitHub returned a draft or prerelease as the latest release")
-
-    tag = release.get("tag_name")
-    if not isinstance(tag, str):
-        raise RuntimeError("the GitHub release response has no tag name")
-    version = tag.removeprefix("v")
-    if VERSION_PATTERN.fullmatch(version) is None:
-        raise RuntimeError(f"unsupported stable Nextcloud Desktop version: {tag!r}")
-    return version
-
-
-def latest_stable_version(payload: str | None = None) -> str:
-    if payload is None:
-        payload = fetch()
-    return parse_release(payload)
+    if not versions:
+        raise RuntimeError("no stable Nextcloud Desktop releases with numeric versions")
+    return max(versions, key=lambda version: tuple(map(int, version.split("."))))
 
 
 def main(argv: list[str] | None = None) -> int:
