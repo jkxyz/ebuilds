@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 import sys
 from urllib.request import Request, urlopen
@@ -24,6 +25,9 @@ def fetch(url: str = RELEASE_URL) -> str:
             "User-Agent": USER_AGENT,
         },
     )
+    if request.type == "https" and request.host == "api.github.com":
+        if token := os.environ.get("GITHUB_TOKEN"):
+            request.add_unredirected_header("Authorization", f"Bearer {token}")
     with urlopen(request, timeout=120) as response:
         return response.read().decode("utf-8")
 
