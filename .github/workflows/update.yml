@@ -33,6 +33,8 @@ jobs:
 
       - name: Discover package updates
         id: packages
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           result=$(python scripts/updates_matrix.py)
           echo "result=$result" >> "$GITHUB_OUTPUT"

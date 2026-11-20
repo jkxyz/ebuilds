@@ -2,8 +2,9 @@ from __future__ import annotations
 
 from contextlib import redirect_stderr, redirect_stdout
 import importlib.util
-from io import StringIO
+from io import BytesIO, StringIO
 import json
+import os
 from pathlib import Path
 import unittest
 from unittest.mock import patch
@@ -20,6 +21,30 @@ def load_probe(relative_path: str, name: str):
     module = importlib.util.module_from_spec(specification)
     specification.loader.exec_module(module)
     return module
+
+
+class GitHubReleaseAuthTests(unittest.TestCase):
+    def test_all_github_probes_authenticate_without_forwarding_token_on_redirect(self):
+        probes = {
+            "app-emacs/ghostel": ("fetch", ()),
+            "net-misc/filen-desktop-bin": ("fetch", ()),
+            "net-misc/nextcloud-client": ("fetch_page", (1,)),
+            "sys-kernel/wsl2-kernel": ("fetch", ()),
+            "www-client/helium-bin": ("fetch", ()),
+        }
+        for atom, (method, args) in probes.items():
+            probe = load_probe(f"{atom}/latest_version.py", atom)
+            for env in ({}, {"GITHUB_TOKEN": "test-token"}):
+                with self.subTest(atom=atom, authenticated=bool(env)):
+                    with (
+                        patch.dict(os.environ, env, clear=True),
+                        patch.object(probe, "urlopen", return_value=BytesIO(b"[]")) as urlopen,
+                    ):
+                        getattr(probe, method)(*args)
+                    request = urlopen.call_args.args[0]
+                    authorization = "Bearer test-token" if env else None
+                    self.assertEqual(request.get_header("Authorization"), authorization)
+                    self.assertNotIn("Authorization", request.headers)
 
 
 class DesktopProbeTests(unittest.TestCase):

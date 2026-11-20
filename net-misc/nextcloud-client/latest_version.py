@@ -5,6 +5,7 @@ from __future__ import annotations
 
 from itertools import count
 import json
+import os
 import re
 import sys
 from urllib.request import Request, urlopen
@@ -26,6 +27,9 @@ def fetch_page(page: int) -> list[dict]:
             "User-Agent": USER_AGENT,
         },
     )
+    if request.type == "https" and request.host == "api.github.com":
+        if token := os.environ.get("GITHUB_TOKEN"):
+            request.add_unredirected_header("Authorization", f"Bearer {token}")
     with urlopen(request, timeout=120) as response:
         releases = json.load(response)
 
