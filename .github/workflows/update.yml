@@ -33,7 +33,9 @@ jobs:
 
       - name: Discover package updates
         id: packages
-        run: echo "result=$(python scripts/updates_matrix.py)" >> "$GITHUB_OUTPUT"
+        run: |
+          result=$(python scripts/updates_matrix.py)
+          echo "result=$result" >> "$GITHUB_OUTPUT"
 
   prepare:
     needs: discover
