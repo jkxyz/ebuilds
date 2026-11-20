@@ -75,7 +75,7 @@ The static iA Writer Mono S family from Information Architects' iA Writer, a mon
 
 The official proprietary Dropbox desktop client for synchronizing files with the Dropbox service. Dropbox supports Linux on amd64 only.
 
-**Versions:** `278.4.4020` (`~amd64`)
+**Versions:** `280.4.5053` (`~amd64`)
 
 **USE flags**
 
