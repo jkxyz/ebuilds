@@ -94,7 +94,7 @@ The GPL-licensed command-line frontend from nautilus-dropbox, configured to cont
 
 Filen is an end-to-end encrypted cloud storage desktop client. It can synchronize local folders, browse cloud files, mount a virtual drive, and host local WebDAV and S3-compatible endpoints.
 
-**Versions:** `3.0.53` (`~amd64`, `~arm64`)
+**Versions:** `3.0.54` (`~amd64`, `~arm64`)
 
 **USE flags:** none
 
