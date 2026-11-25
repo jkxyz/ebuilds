@@ -51,7 +51,7 @@ Emacs terminal emulator powered by libghostty
 
 ChatGPT is OpenAI's desktop application for Chat, Work, and Codex. It can work with local projects, files, and development tools.
 
-**Versions:** `26.1120.41243` (`~amd64`, `~arm64`)
+**Versions:** `26.1120.50957` (`~amd64`, `~arm64`)
 
 **USE flags:** none
 
